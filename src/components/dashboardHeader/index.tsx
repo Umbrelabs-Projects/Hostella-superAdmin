@@ -7,7 +7,7 @@ import { PAGE_TITLES } from "@/lib/constants";
 import { BellDot, SearchIcon, Settings2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useSuperAdmin } from "@/app/dashboard/contexts/page";
+import { useSuperAdmin } from "@/app/dashboard/contexts/SuperAdminContext";
 
 export default function DashboardHeader() {
   const { currentUser } = useSuperAdmin(); // ✅ get user if needed

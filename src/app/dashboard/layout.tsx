@@ -2,14 +2,18 @@
 
 import AppSidebar from "@/components/AppSidebar";
 import DashboardHeader from "@/components/dashboardHeader";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"; // ✅ import SidebarProvider
-import React from "react";
-import { SuperAdminProvider } from "./contexts/page";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import React, { ReactNode } from "react";
+import { SuperAdminProvider } from "./contexts/SuperAdminContext";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SuperAdminProvider>
-      <SidebarProvider> {/* ✅ wrap here */}
+      <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
           <DashboardHeader />

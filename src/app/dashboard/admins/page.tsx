@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useState } from "react";
-import { useSuperAdmin } from "../contexts/page";
+import { useSuperAdmin } from "../contexts/SuperAdminContext";
 import { Admin } from "@/types/common";
 import { CreateAdminDialog } from "./_components/CreateAdminDialog";
 import { AdminTable } from "./_components/AdminTable";

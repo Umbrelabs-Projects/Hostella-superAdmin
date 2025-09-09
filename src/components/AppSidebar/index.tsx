@@ -19,7 +19,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
-import { useSuperAdmin } from "@/app/dashboard/contexts/page";
+import { useSuperAdmin } from "@/app/dashboard/contexts/SuperAdminContext";
 
 export default function AppSidebar() {
   const pathname = usePathname();

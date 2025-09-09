@@ -24,7 +24,7 @@ type SuperAdminContextType = {
 
 const SuperAdminContext = createContext<SuperAdminContextType | undefined>(undefined);
 
-export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) => {
+export const SuperAdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,21 +37,17 @@ export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) 
     try {
       const res = await fetch("/api/admins");
       if (!res.ok) throw new Error(await res.text());
-      const data = (await res.json()) as Admin[];
+      const data: Admin[] = await res.json();
       setAdmins(data);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to fetch admins");
-      }
+      setError(err instanceof Error ? err.message : "Failed to fetch admins");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void fetchAdmins();
+    fetchAdmins();
     const stored = localStorage.getItem("superAdminUser");
     if (stored) {
       try {
@@ -60,7 +56,7 @@ export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, [fetchAdmins]);
 
-  const createAdmin = async (payload: NewAdmin) => {
+  const createAdmin = async (payload: NewAdmin): Promise<Admin> => {
     setLoading(true);
     try {
       const res = await fetch("/api/admins", {
@@ -69,8 +65,8 @@ export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) 
         body: JSON.stringify({ ...payload, role: "admin" }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const created = (await res.json()) as Admin;
-      setAdmins((s) => [created, ...s]);
+      const created: Admin = await res.json();
+      setAdmins((prev) => [created, ...prev]);
       return created;
     } finally {
       setLoading(false);
@@ -80,7 +76,7 @@ export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) 
   const updateAdmin = async (
     id: string,
     payload: Partial<Pick<Admin, "name" | "email" | "avatar" | "isActive">>
-  ) => {
+  ): Promise<Admin> => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admins/${id}`, {
@@ -89,20 +85,20 @@ export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) 
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await res.text());
-      const updated = (await res.json()) as Admin;
-      setAdmins((s) => s.map((a) => (a.id === id ? updated : a)));
+      const updated: Admin = await res.json();
+      setAdmins((prev) => prev.map((a) => (a.id === id ? updated : a)));
       return updated;
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteAdmin = async (id: string) => {
+  const deleteAdmin = async (id: string): Promise<void> => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admins/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(await res.text());
-      setAdmins((s) => s.filter((a) => a.id !== id));
+      setAdmins((prev) => prev.filter((a) => a.id !== id));
     } finally {
       setLoading(false);
     }
@@ -135,7 +131,7 @@ export const SuperAdminProvider = ({ children }: { children: React.ReactNode }) 
   );
 };
 
-export const useSuperAdmin = () => {
+export const useSuperAdmin = (): SuperAdminContextType => {
   const ctx = useContext(SuperAdminContext);
   if (!ctx) throw new Error("useSuperAdmin must be used inside SuperAdminProvider");
   return ctx;

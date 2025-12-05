@@ -5,8 +5,6 @@ import { StudentBooking } from "@/types/booking";
 import {
   DashboardAnalytics,
   BookingStats,
-  DailyBookingTrend,
-  RoomTypeDistribution,
   GenderDistribution,
   StatusBreakdown,
   RevenueByHostel,
@@ -43,62 +41,6 @@ export function useAnalyticsApi() {
       totalRevenue,
       averageBookingValue,
     };
-  }, []);
-
-  // Compute daily trends for the last 30 days
-  const computeDailyTrends = useCallback((data: StudentBooking[]): DailyBookingTrend[] => {
-    const trends = new Map<string, DailyBookingTrend>();
-    const last30Days = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (29 - i));
-      return date.toISOString().split("T")[0];
-    });
-
-    // Initialize all dates
-    last30Days.forEach((date) => {
-      trends.set(date, {
-        date,
-        bookings: 0,
-        revenue: 0,
-        approved: 0,
-        pending: 0,
-      });
-    });
-
-    // Aggregate data by date
-    data.forEach((booking) => {
-      const bookingDate = booking.date || new Date().toISOString().split("T")[0];
-      if (trends.has(bookingDate)) {
-        const trend = trends.get(bookingDate)!;
-        trend.bookings += 1;
-        trend.revenue += parseFloat(booking.price || "0");
-        if (booking.status === "approved") trend.approved += 1;
-        else trend.pending += 1;
-      }
-    });
-
-    return Array.from(trends.values());
-  }, []);
-
-  // Compute room type distribution
-  const computeRoomTypeDistribution = useCallback((data: StudentBooking[]): RoomTypeDistribution[] => {
-    const distribution = new Map<string, { count: number; revenue: number }>();
-
-    data.forEach((booking) => {
-      const roomType = booking.roomTitle;
-      const current = distribution.get(roomType) || { count: 0, revenue: 0 };
-      current.count += 1;
-      current.revenue += parseFloat(booking.price || "0");
-      distribution.set(roomType, current);
-    });
-
-    const total = data.length;
-    return Array.from(distribution.entries()).map(([roomType, stats]) => ({
-      roomType,
-      count: stats.count,
-      revenue: stats.revenue,
-      percentage: total > 0 ? (stats.count / total) * 100 : 0,
-    }));
   }, []);
 
   // Compute gender distribution
@@ -227,8 +169,6 @@ export function useAnalyticsApi() {
       // Use all bookings for comprehensive analytics
       const analytics: DashboardAnalytics = {
         bookingStats: computeBookingStats(bookings), // Use all bookings for stats
-        dailyTrends: computeDailyTrends(bookings),
-        roomTypeDistribution: computeRoomTypeDistribution(bookings),
         genderDistribution: computeGenderDistribution(bookings),
         statusBreakdown: computeStatusBreakdown(bookings),
         revenueByHostel: computeRevenueByHostel(bookings),
@@ -249,8 +189,6 @@ export function useAnalyticsApi() {
     setError,
     setAnalytics,
     computeBookingStats,
-    computeDailyTrends,
-    computeRoomTypeDistribution,
     computeGenderDistribution,
     computeStatusBreakdown,
     computeRevenueByHostel,

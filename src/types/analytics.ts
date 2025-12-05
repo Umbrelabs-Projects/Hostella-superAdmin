@@ -58,8 +58,6 @@ export interface PaymentStatus {
 
 export interface DashboardAnalytics {
   bookingStats: BookingStats;
-  dailyTrends: DailyBookingTrend[];
-  roomTypeDistribution: RoomTypeDistribution[];
   genderDistribution: GenderDistribution[];
   statusBreakdown: StatusBreakdown[];
   revenueByHostel: RevenueByHostel[];

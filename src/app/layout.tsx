@@ -1,34 +1,42 @@
 import type { Metadata } from "next";
 import { Comfortaa, Poppins } from "next/font/google";
-
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const poppins = Poppins({
-  variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const comfortaa = Comfortaa({
-  variable: "--font-comfortaa",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Hostella Super-Admin",
-  description: "Create and manage admins",
+  title: "Hostella Super Admin",
+  description: "Your description",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} ${comfortaa.variable} antialiased`}>
-        {children}
+      <body className="antialiased">
+        <div
+          style={{
+            fontFamily: `${poppins.style.fontFamily}, ${comfortaa.style.fontFamily}`,
+          }}
+        >
+          {children}
+        </div>
+
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

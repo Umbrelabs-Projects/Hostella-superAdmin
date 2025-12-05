@@ -55,7 +55,11 @@ export default function LoginForm() {
           <div className="bg-black px-3 pb-2">
             <Image src={images.logo} alt="logo" />
           </div>
-          <h1 className="text-2xl font-bold">Welcome Hostella Super-Admin</h1>
+          <div className="text-center">
+            {" "}
+            <h1 className="text-2xl font-bold">Welcome Hostella</h1>
+            <h1 className="text-2xl font-bold"> Super-Admin</h1>
+          </div>
           <p className="text-sm">Manage Hostella from here</p>
         </div>
 

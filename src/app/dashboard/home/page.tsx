@@ -6,10 +6,8 @@ import { useEffect } from "react";
 import { useAnalyticsStore } from "@/stores/useAnalyticsStore";
 import { useAnalyticsApi } from "./_hooks/useAnalyticsApi";
 import StatsCard from "./components/StatsCard";
-import BookingTrendsChart from "./components/BookingTrendsChart";
 import StatusDistributionChart from "./components/StatusDistributionChart";
 import RevenueChart from "./components/RevenueChart";
-import RoomTypeChart from "./components/RoomTypeChart";
 import HostelRevenueTable from "./components/HostelRevenueTable";
 import {
   BookOpen,
@@ -64,7 +62,7 @@ export default function HomePage() {
     return null;
   }
 
-  const { bookingStats, dailyTrends, statusBreakdown, monthlyRevenue, roomTypeDistribution, revenueByHostel } =
+  const { bookingStats, statusBreakdown, monthlyRevenue, revenueByHostel } =
     analytics;
 
   return (
@@ -140,16 +138,10 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Charts Row 1 */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BookingTrendsChart data={dailyTrends} />
         <StatusDistributionChart data={statusBreakdown} />
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RevenueChart data={monthlyRevenue} />
-        <RoomTypeChart data={roomTypeDistribution} />
       </div>
 
       {/* Hostel Performance Table */}

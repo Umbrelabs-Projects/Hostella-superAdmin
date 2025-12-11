@@ -28,7 +28,7 @@ interface EditAdminDialogProps {
 
 export default function EditAdminDialog({ isOpen, onClose }: EditAdminDialogProps) {
   const { loading, error, selectedAdmin, hostels } = useAdminStore();
-  const { updateAdminData, fetchHostels } = useAdminApi();
+  const { updateAdmin, fetchHostels } = useAdminApi();
 
   const form = useForm<AdminEditFormData>({
     resolver: zodResolver(adminEditSchema),
@@ -77,10 +77,8 @@ export default function EditAdminDialog({ isOpen, onClose }: EditAdminDialogProp
   const onSubmit: SubmitHandler<AdminEditFormData> = async (data) => {
     if (!selectedAdmin) return;
 
-    const result = await updateAdminData(selectedAdmin.id, data);
-    if (result) {
-      handleDialogClose();
-    }
+    await updateAdmin(selectedAdmin.id, data);
+    handleDialogClose();
   };
 
   // Filter available hostels (include current hostel + those without admins)

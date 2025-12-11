@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Comfortaa, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Providers } from "./providers";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -17,7 +18,7 @@ const comfortaa = Comfortaa({
 
 export const metadata: Metadata = {
   title: "Hostella Super Admin",
-  description: "Your description",
+  description: "Super admin dashboard for managing hostels, admins, bookings, and communications.",
 };
 
 export default function RootLayout({
@@ -28,13 +29,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <div
-          style={{
-            fontFamily: `${poppins.style.fontFamily}, ${comfortaa.style.fontFamily}`,
-          }}
-        >
-          {children}
-        </div>
+        <Providers>
+          <div
+            style={{
+              fontFamily: `${poppins.style.fontFamily}, ${comfortaa.style.fontFamily}`,
+            }}
+          >
+            {children}
+          </div>
+        </Providers>
 
         <Toaster position="top-right" richColors />
       </body>

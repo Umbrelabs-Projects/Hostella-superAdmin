@@ -29,7 +29,7 @@ export default function BroadcastPage() {
     setCurrentPage,
   } = useBroadcastStore();
 
-  const { fetchMessages, deleteMessage, resendMessage } = useBroadcastApi();
+  const { fetchMessages, deleteMessage } = useBroadcastApi();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Fetch messages on component mount and when filters change
@@ -55,13 +55,6 @@ export default function BroadcastPage() {
     }
   };
 
-  const handleResendMessage = async (id: string) => {
-    const confirmed = window.confirm("Are you sure you want to resend this message?");
-    if (confirmed) {
-      await resendMessage(id);
-    }
-  };
-
   const totalPages = Math.ceil(totalMessages / pageSize);
 
   return (
@@ -84,7 +77,6 @@ export default function BroadcastPage() {
         messages={messages}
         loading={loading && !isInitialized}
         onDelete={handleDeleteMessage}
-        onResend={handleResendMessage}
       />
 
       {/* Pagination */}

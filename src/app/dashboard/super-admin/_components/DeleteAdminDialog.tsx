@@ -27,11 +27,9 @@ export default function DeleteAdminDialog({ isOpen, onClose, onSuccess }: Delete
   const handleDelete = async () => {
     if (!selectedAdmin) return;
 
-    const success = await deleteAdmin(selectedAdmin.id);
-    if (success) {
-      onClose();
-      onSuccess?.();
-    }
+    await deleteAdmin(selectedAdmin.id);
+    onClose();
+    onSuccess?.();
   };
 
   if (!selectedAdmin) return null;

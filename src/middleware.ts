@@ -8,9 +8,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth-token")?.value;
 
-  const isProtected = protectedPaths.some((path) =>
-    pathname.startsWith(path),
-  );
+  const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/", request.url));
@@ -27,4 +25,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
-

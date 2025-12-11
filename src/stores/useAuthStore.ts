@@ -11,6 +11,8 @@ interface User {
   email: string;
   phone?: string;
   avatar?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
 }
 
 interface AuthState {
@@ -22,6 +24,7 @@ interface AuthState {
   signIn: (data: SignInFormData) => Promise<void>;
   signOut: () => void;
   restoreSession: () => Promise<void>;
+  fetchProfile: () => Promise<void>;
 
   updateProfile: (updates: FormData) => Promise<void>;
   updatePassword: (payload: {
@@ -87,6 +90,19 @@ export const useAuthStore = create<AuthState>()(
         } catch {
           setAuthToken(null);
           set({ user: null, token: null, loading: false });
+        }
+      },
+
+      // --- Fetch Profile ---
+      fetchProfile: async () => {
+        set({ loading: true, error: null });
+        try {
+          const user = await apiFetch<User>("/auth/me");
+          set({ user, loading: false });
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "Failed to fetch profile";
+          set({ error: message, loading: false });
         }
       },
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AvatarUploader from "./components/AvatarUploader";
 import PersonalInfoForm from "./components/PersonalInfoForm";
@@ -8,10 +8,24 @@ import { useAuthStore } from "@/stores/useAuthStore";
 export default function ProfileSettings() {
   const user = useAuthStore((s) => s.user);
   const updateProfile = useAuthStore((s) => s.updateProfile);
+  const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const loading = useAuthStore((s) => s.loading);
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  // Fetch latest profile when visiting the page
+  useEffect(() => {
+    void fetchProfile();
+  }, [fetchProfile]);
+
+  // Keep local state in sync when user updates arrive
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName || "");
+      setLastName(user.lastName || "");
+    }
+  }, [user]);
 
   const handleSave = async () => {
     const formData = new FormData();
@@ -26,7 +40,7 @@ export default function ProfileSettings() {
       <h2 className="text-lg font-semibold">Profile Settings</h2>
 
       <AvatarUploader
-        avatar={user?.avatar || "/avatar.jpg"}
+        avatar={user?.avatar || ""}
         onFileSelect={setAvatarFile}
       />
 
@@ -38,7 +52,7 @@ export default function ProfileSettings() {
       <PersonalInfoForm
         firstName={user?.firstName || firstName}
         lastName={user?.lastName || lastName}
-        email={user?.email || "elvisgyasiowusu24@gmail.com"}
+        email={user?.email || ""}
         onChange={(field, value) =>
           field === "firstName" ? setFirstName(value) : setLastName(value)
         }

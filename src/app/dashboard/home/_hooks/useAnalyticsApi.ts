@@ -1,5 +1,6 @@
 // src/app/dashboard/home/_hooks/useAnalyticsApi.ts
 
+import { useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { useAnalyticsStore } from "@/stores/useAnalyticsStore";
 import { DashboardAnalytics } from "@/types/analytics";
@@ -7,7 +8,7 @@ import { DashboardAnalytics } from "@/types/analytics";
 export function useAnalyticsApi() {
   const { setAnalytics, setLoading, setError, dateRange } = useAnalyticsStore();
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -20,7 +21,7 @@ export function useAnalyticsApi() {
         `/analytics/dashboard?${params.toString()}`,
         {
           method: "GET",
-        }
+        },
       );
 
       setAnalytics(data);
@@ -33,7 +34,7 @@ export function useAnalyticsApi() {
       setError(message);
       setLoading(false);
     }
-  };
+  }, [dateRange.endDate, dateRange.startDate, setAnalytics, setError, setLoading]);
 
   return { fetchAnalytics };
 }

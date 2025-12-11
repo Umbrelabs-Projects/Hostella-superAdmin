@@ -8,8 +8,11 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   // Default to relative paths (same origin) when no API URL is configured.
   // This lets the app call local API routes during development without extra env setup.
   const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+
+  const isFormData = options.body instanceof FormData;
+
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string> | undefined),
   };
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Public routes can be added here if needed.
 // const publicPaths = ["/", "/(auth)"];
-const protectedPaths = ["/dashboard", "/chat"];
+const protectedPaths = ["/dashboard"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

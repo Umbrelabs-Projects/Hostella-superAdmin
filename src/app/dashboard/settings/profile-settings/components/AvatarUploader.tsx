@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Upload } from "lucide-react";
+import { Upload, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AvatarUploaderProps {
@@ -14,6 +14,11 @@ export default function AvatarUploader({
   onFileSelect,
 }: AvatarUploaderProps) {
   const [preview, setPreview] = useState(avatar);
+
+  // keep preview in sync when a new avatar URL is provided
+  useEffect(() => {
+    setPreview(avatar);
+  }, [avatar]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,13 +33,19 @@ export default function AvatarUploader({
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
       <div className="relative">
-        <Image
-          src={preview}
-          alt="Profile"
-          width={128}
-          height={128}
-          className="rounded-full border"
-        />
+        {preview ? (
+          <Image
+            src={preview}
+            alt="Profile"
+            width={128}
+            height={128}
+            className="rounded-full border object-cover"
+          />
+        ) : (
+          <div className="w-32 h-32 rounded-full border flex items-center justify-center bg-gray-50 text-gray-400">
+            <UserRound className="w-12 h-12" />
+          </div>
+        )}
         <label
           htmlFor="avatar-upload"
           className="absolute bottom-0 right-0 cursor-pointer"

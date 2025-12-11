@@ -36,23 +36,7 @@ export default function HomePage() {
     void fetchAnalytics();
   };
 
-  if (error && !analytics) {
-    return (
-      <div className="p-3 md:px-6">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <AlertCircle className="h-12 w-12 text-red-600" />
-          <div className="text-center">
-            <p className="text-red-600 font-semibold mb-2">Failed to load analytics</p>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={handleRefresh} variant="outline">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retry
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const showLoading = loading && !analytics;
 
   const { bookingStats, statusBreakdown, monthlyRevenue, revenueByHostel, paymentStatus } =
     analytics || {};
@@ -75,9 +59,24 @@ export default function HomePage() {
         </Button>
       </div>
 
+      {/* Error banner (non-blocking) */}
+      {error && (
+        <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
+          <div className="space-y-1">
+            <p className="font-medium">Failed to load analytics</p>
+            <p className="text-red-700">{error}</p>
+            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {loading && !analytics ? (
+        {showLoading ? (
           <>
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -120,7 +119,7 @@ export default function HomePage() {
 
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {loading && !analytics ? (
+        {showLoading ? (
           <>
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -155,7 +154,7 @@ export default function HomePage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {loading && !analytics ? (
+        {showLoading ? (
           <>
             <ChartSkeleton />
             <ChartSkeleton />
@@ -169,7 +168,7 @@ export default function HomePage() {
       </div>
 
       {/* Hostel Performance Table */}
-      {loading && !analytics ? (
+      {showLoading ? (
         <TableSkeleton rows={5} />
       ) : (
         revenueByHostel && <HostelRevenueTable data={revenueByHostel} />

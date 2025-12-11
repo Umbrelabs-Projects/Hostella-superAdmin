@@ -85,7 +85,7 @@ describe('useBookingStore', () => {
       result.current.updateBooking(updatedBooking)
     })
 
-    const stored = result.current.bookings.find(b => b.id === '1')
+    const stored = result.current.bookings.find((b: StudentBooking) => b.id === '1')
     expect(stored?.status).toBe('pending approval')
   })
 

@@ -87,7 +87,7 @@ describe('useAdminStore', () => {
       result.current.updateAdmin(updatedAdmin)
     })
 
-    const stored = result.current.admins.find(a => a.id === '1')
+    const stored = result.current.admins.find((a: Admin) => a.id === '1')
     expect(stored?.firstName).toBe('Updated')
   })
 

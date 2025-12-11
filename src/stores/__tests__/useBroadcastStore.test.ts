@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react'
 import { useBroadcastStore } from '@/stores/useBroadcastStore'
+import { BroadcastMessage } from '@/types/broadcast'
 
 describe('useBroadcastStore', () => {
   const mockMessage = {
@@ -73,7 +74,7 @@ describe('useBroadcastStore', () => {
       result.current.updateMessage(updatedMessage)
     })
 
-    const stored = result.current.messages.find(m => m.id === '1')
+    const stored = result.current.messages.find((m: BroadcastMessage) => m.id === '1')
     expect(stored?.title).toBe('Updated Message')
   })
 

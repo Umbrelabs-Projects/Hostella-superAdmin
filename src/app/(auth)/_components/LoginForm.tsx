@@ -37,7 +37,9 @@ export default function LoginForm() {
       router.push(ROUTES.dashboard);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Login failed. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Login failed. Please try again."
       );
     } finally {
       setIsLoading(false);

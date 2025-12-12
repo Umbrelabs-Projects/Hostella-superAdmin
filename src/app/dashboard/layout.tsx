@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/useAuthStore";
 import SideNav from "./components/layout/sidebar/sideNav";
 import Header from "./components/layout/header/Header";
 
@@ -10,6 +12,32 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const { token, loading } = useAuthStore();
+
+  // Protect dashboard route - redirect to home if not authenticated
+  useEffect(() => {
+    if (!loading && !token) {
+      router.push("/");
+    }
+  }, [token, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if no token
+  if (!token) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen flex-col md:flex-row bg-gray-100 ">

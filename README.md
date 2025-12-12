@@ -18,10 +18,8 @@ NEXT_PUBLIC_API_URL=https://your-backend-api.com
 ```
 
 ## Key Docs (read in order)
-1) [BACKEND_HANDOFF.md](BACKEND_HANDOFF.md) – integration overview  
-2) [API_INTEGRATION_DOCS.md](API_INTEGRATION_DOCS.md) – endpoint details  
-3) [README_BACKEND.md](README_BACKEND.md) – backend setup  
-4) [QUICK_REFERENCE.md](QUICK_REFERENCE.md) – code map
+1) [BACKEND_HANDOFF.md](BACKEND_HANDOFF.md) – backend integration overview and expectations  
+2) [API_INTEGRATION_DOCS.md](API_INTEGRATION_DOCS.md) – full endpoint specifications
 
 ## Testing
 

@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_API_URL = 'https://www.example.railway'
+process.env.API_URL = 'https://www.example.railway'
 
 // Suppress console errors during tests unless explicitly needed
 const originalError = console.error

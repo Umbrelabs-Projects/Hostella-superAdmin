@@ -6,7 +6,7 @@ Next.js app for hostel administration, bookings, messaging, analytics, and user 
 
 ```bash
 npm install
-echo "NEXT_PUBLIC_API_URL=https://your-backend-api.com" > .env.local
+echo "API_URL=https://your-backend-api.com" > .env.local
 npm run dev
 # open http://localhost:3000
 ```
@@ -14,7 +14,7 @@ npm run dev
 ## Environment
 
 ```
-NEXT_PUBLIC_API_URL=https://your-backend-api.com
+API_URL=https://your-backend-api.com
 ```
 
 ## Key Docs (read in order)
@@ -71,6 +71,6 @@ src/
 - Frontend: ready
 - Docs: ready
 - Tests: green
-- Backend API: plug in `NEXT_PUBLIC_API_URL` and wire endpoints per docs
+- Backend API: plug in `API_URL` and wire endpoints per docs
 
 Questions? Check the docs above or the tests in `src/**/__tests__/` for expected behavior.

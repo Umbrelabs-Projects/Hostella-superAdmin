@@ -76,7 +76,7 @@ The application uses a custom `apiFetch` utility in `src/lib/api.ts` that:
 Set the API base URL in `.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=https://www.example.railway
+API_URL=https://www.example.railway
 ```
 
 ## State Management (Zustand)
@@ -159,7 +159,7 @@ Required environment variables:
 
 ```env
 # Backend API
-NEXT_PUBLIC_API_URL=https://www.example.railway
+API_URL=https://www.example.railway
 
 # Next.js (optional)
 NODE_ENV=development

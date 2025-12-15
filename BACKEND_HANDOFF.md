@@ -109,7 +109,7 @@ Create `.env.local` in the project root:
 
 ```bash
 # Backend API Base URL
-NEXT_PUBLIC_API_URL=https://your-backend-api.com
+API_URL=https://your-backend-api.com
 
 # Optional: Additional configuration
 # NEXT_PUBLIC_APP_NAME=Hostella Super Admin
@@ -210,7 +210,7 @@ curl -X POST https://your-api.com/api/auth/login \
 ### 3. Connect Frontend
 ```bash
 # Set backend URL
-echo "NEXT_PUBLIC_API_URL=https://your-api.com" > .env.local
+echo "API_URL=https://your-api.com" > .env.local
 
 # Start frontend
 npm run dev
@@ -288,7 +288,7 @@ Using `Zod` schemas in `_validations/` folders:
 ## Deployment Checklist
 
 ### Frontend (When Ready)
-- [ ] Set production `NEXT_PUBLIC_API_URL`
+- [ ] Set production `API_URL`
 - [ ] Run `npm run build`
 - [ ] Deploy to Vercel/Netlify/AWS
 - [ ] Configure production environment variables

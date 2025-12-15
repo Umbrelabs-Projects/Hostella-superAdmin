@@ -182,7 +182,7 @@ try {
 ### Change API Base URL
 Edit `.env.local`:
 ```
-NEXT_PUBLIC_API_URL=https://new-url.com
+API_URL=https://new-url.com
 ```
 
 ### Test API Endpoint

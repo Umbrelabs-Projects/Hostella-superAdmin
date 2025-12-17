@@ -162,8 +162,9 @@ describe("Hostel Validation Schemas", () => {
         name: "Updated Hostel",
         location: "New Location",
         campus: "South Campus",
-        phone: "+9876543210",
-        floors: 5,
+        totalRooms: 50,
+        singleRooms: 20,
+        doubleRooms: 30,
         facilities: ["Wi-Fi", "Gym", "Laundry"],
       };
 
@@ -171,34 +172,20 @@ describe("Hostel Validation Schemas", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should not include room fields (read-only)", () => {
+    it("should allow room fields to be editable (not read-only)", () => {
       const dataWithRooms = {
         name: "Updated Hostel",
         location: "New Location",
         campus: "South Campus",
-        phone: "+9876543210",
-        floors: 5,
+        totalRooms: 100,
+        singleRooms: 40,
+        doubleRooms: 60,
         facilities: ["Wi-Fi"],
-        totalRooms: 100, // Should not be in update schema
       };
 
       const result = updateHostelSchema.safeParse(dataWithRooms);
-      // Schema should still pass, but extra fields are ignored
+      // Room fields are now editable in update schema
       expect(result.success).toBe(true);
-    });
-
-    it("should validate phone number format", () => {
-      const invalidData = {
-        name: "Updated Hostel",
-        location: "New Location",
-        campus: "South Campus",
-        phone: "abc123",
-        floors: 5,
-        facilities: ["Wi-Fi"],
-      };
-
-      const result = updateHostelSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
     });
   });
 

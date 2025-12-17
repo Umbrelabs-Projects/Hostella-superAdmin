@@ -11,13 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useHostelApi } from "../_hooks/useHostelApi";
 import { UpdateHostelFormData } from "../_validations/hostelSchema";
@@ -31,12 +24,6 @@ interface EditHostelDialogProps {
   onSuccess: () => void;
 }
 
-const campusOptions = [
-  "Main Campus",
-  "North Campus",
-  "South Campus",
-  "East Campus",
-];
 const facilityOptions = [
   "Wi-Fi",
   "Laundry",
@@ -59,10 +46,12 @@ export default function EditHostelDialog({
     name: "",
     location: "",
     campus: "",
-    phone: "",
-    floors: 1,
+    totalRooms: 0,
+    singleRooms: 0,
+    doubleRooms: 0,
     facilities: [],
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (hostel) {
@@ -70,18 +59,40 @@ export default function EditHostelDialog({
         name: hostel.name,
         location: hostel.location,
         campus: hostel.campus,
-        phone: hostel.phone,
-        floors: hostel.floors,
+        totalRooms: hostel.totalRooms,
+        singleRooms: hostel.singleRooms,
+        doubleRooms: hostel.doubleRooms,
         facilities: hostel.facilities,
       });
     }
   }, [hostel]);
+
+  // Real-time validation for room totals
+  useEffect(() => {
+    const sum = formData.singleRooms + formData.doubleRooms;
+    if (formData.totalRooms > 0 && sum !== formData.totalRooms) {
+      setErrors((prev) => ({
+        ...prev,
+        totalRooms: `Single (${formData.singleRooms}) + Double (${formData.doubleRooms}) must equal Total (${formData.totalRooms})`,
+      }));
+    } else {
+      setErrors((prev) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { totalRooms, ...rest } = prev;
+        return rest;
+      });
+    }
+  }, [formData.singleRooms, formData.doubleRooms, formData.totalRooms]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hostel) return;
 
     try {
+      if (Object.keys(errors).length > 0) {
+        toast.error("Please fix validation errors");
+        return;
+      }
       await updateHostel(hostel.id, formData);
       toast.success("Hostel updated successfully");
       onSuccess();
@@ -150,86 +161,79 @@ export default function EditHostelDialog({
               <Label htmlFor="campus">
                 Campus <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value={formData.campus}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, campus: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select campus" />
-                </SelectTrigger>
-                <SelectContent>
-                  {campusOptions.map((campus) => (
-                    <SelectItem key={campus} value={campus}>
-                      {campus}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Phone */}
-            <div>
-              <Label htmlFor="phone">
-                Phone <span className="text-red-500">*</span>
-              </Label>
               <Input
-                id="phone"
-                value={formData.phone}
+                id="campus"
+                value={formData.campus}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  setFormData({ ...formData, campus: e.target.value })
                 }
-                placeholder="+1234567890"
+                placeholder="Enter campus name"
                 required
               />
             </div>
 
-            {/* Floors */}
+            {/* Total Rooms */}
             <div>
-              <Label htmlFor="floors">
-                Floors <span className="text-red-500">*</span>
+              <Label htmlFor="totalRooms">
+                Total Rooms <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="floors"
+                id="totalRooms"
                 type="number"
                 min="1"
-                value={formData.floors}
+                value={formData.totalRooms}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    floors: parseInt(e.target.value) || 1,
+                    totalRooms: parseInt(e.target.value) || 0,
+                  })
+                }
+                required
+                className={errors.totalRooms ? "border-red-500" : ""}
+              />
+              {errors.totalRooms && (
+                <p className="text-red-500 text-sm mt-1">{errors.totalRooms}</p>
+              )}
+            </div>
+
+            {/* Single Rooms */}
+            <div>
+              <Label htmlFor="singleRooms">
+                Single Rooms <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="singleRooms"
+                type="number"
+                min="0"
+                value={formData.singleRooms}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    singleRooms: parseInt(e.target.value) || 0,
                   })
                 }
                 required
               />
             </div>
 
-            {/* Room Breakdown (Read-only) */}
-            <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
-              <Label className="text-gray-700 mb-2 block">
-                Room Breakdown (Cannot be changed after creation)
+            {/* Double Rooms */}
+            <div>
+              <Label htmlFor="doubleRooms">
+                Double Rooms <span className="text-red-500">*</span>
               </Label>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Total Rooms:</span>
-                  <span className="ml-2 font-semibold">
-                    {hostel.totalRooms}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Single Rooms:</span>
-                  <span className="ml-2 font-semibold">
-                    {hostel.singleRooms}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Double Rooms:</span>
-                  <span className="ml-2 font-semibold">
-                    {hostel.doubleRooms}
-                  </span>
-                </div>
-              </div>
+              <Input
+                id="doubleRooms"
+                type="number"
+                min="0"
+                value={formData.doubleRooms}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    doubleRooms: parseInt(e.target.value) || 0,
+                  })
+                }
+                required
+              />
             </div>
           </div>
 
@@ -259,7 +263,7 @@ export default function EditHostelDialog({
             </Button>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || Object.keys(errors).length > 0}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {loading ? "Updating..." : "Update Hostel"}

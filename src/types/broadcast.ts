@@ -1,6 +1,6 @@
 // src/types/broadcast.ts
 
-export type BroadcastRecipientType = "all-residents" | "all-members" | "specific-members";
+export type BroadcastRecipientType = "all-members" | "all-admins";
 export type BroadcastMessageStatus = "draft" | "sent" | "scheduled" | "failed";
 export type BroadcastPriority = "low" | "medium" | "high" | "urgent";
 

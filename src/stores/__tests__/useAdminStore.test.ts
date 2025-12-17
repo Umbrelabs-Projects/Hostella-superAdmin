@@ -21,7 +21,13 @@ describe("useAdminStore", () => {
     id: "hostel1",
     name: "Hostel 1",
     location: "Campus",
-    capacity: 50,
+    campus: "Main Campus",
+    phone: "+1234567890",
+    floors: 3,
+    totalRooms: 50,
+    singleRooms: 30,
+    doubleRooms: 20,
+    facilities: ["Wi-Fi", "Laundry"],
     hasAdmin: false,
   };
 

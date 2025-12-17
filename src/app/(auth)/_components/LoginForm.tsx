@@ -34,14 +34,12 @@ export default function LoginForm() {
     try {
       await signIn(data);
       toast.success("Login successful!");
-      router.push(ROUTES.dashboard);
+      // Small delay to ensure cookie is set, then navigate
+      setTimeout(() => {
+        router.push(ROUTES.dashboard);
+      }, 100);
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Login failed. Please try again."
-      );
-    } finally {
+      toast.error("Login failed. Please check your credentials.");
       setIsLoading(false);
     }
   };

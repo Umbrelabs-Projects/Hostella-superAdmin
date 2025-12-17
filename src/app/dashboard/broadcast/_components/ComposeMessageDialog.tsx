@@ -4,7 +4,12 @@
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBroadcastStore } from "@/stores/useBroadcastStore";
-import { broadcastMessageSchema, BroadcastMessageFormData } from "../_validations/broadcastSchema";
+import {
+  broadcastMessageSchema,
+  BroadcastMessageFormData,
+} from "../_validations/broadcastSchema";
 import { useBroadcastApi } from "../_hooks/useBroadcastApi";
 import { Loader2 } from "lucide-react";
 
@@ -25,7 +33,10 @@ interface ComposeMessageDialogProps {
   onClose: () => void;
 }
 
-export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessageDialogProps) {
+export default function ComposeMessageDialog({
+  isOpen,
+  onClose,
+}: ComposeMessageDialogProps) {
   const { composer, resetComposer, loading } = useBroadcastStore();
   const { sendMessage, scheduleMessage } = useBroadcastApi();
 
@@ -41,7 +52,14 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
     },
   });
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = form;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = form;
   const watchedData = watch();
   const recipientType = watch("recipientType");
   const content = watch("content");
@@ -63,9 +81,13 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
       };
 
       if (data.scheduledFor) {
+        // Convert datetime-local format to ISO 8601 with timezone
+        const scheduledDate = new Date(data.scheduledFor);
+        const scheduledForISO = scheduledDate.toISOString();
+
         await scheduleMessage({
           ...payload,
-          scheduledFor: data.scheduledFor,
+          scheduledFor: scheduledForISO,
         });
       } else {
         await sendMessage(payload);
@@ -87,7 +109,12 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
           <DialogTitle>Compose Broadcast Message</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
+          className="space-y-6"
+        >
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">Message Title</Label>
@@ -106,7 +133,11 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="content">Message Content</Label>
-              <span className={`text-xs ${charCount > 4500 ? "text-red-500" : "text-gray-500"}`}>
+              <span
+                className={`text-xs ${
+                  charCount > 4500 ? "text-red-500" : "text-gray-500"
+                }`}
+              >
                 {charCount} / {charLimit}
               </span>
             </div>
@@ -128,7 +159,10 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
             <Select
               value={recipientType}
               onValueChange={(value) => {
-                setValue("recipientType", value as "all-residents" | "all-members" | "specific-members");
+                setValue(
+                  "recipientType",
+                  value as "all-members" | "all-admins"
+                );
               }}
               disabled={loading}
             >
@@ -136,13 +170,14 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
                 <SelectValue placeholder="Select recipients" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-residents">All Residents</SelectItem>
                 <SelectItem value="all-members">All Members</SelectItem>
-                <SelectItem value="specific-members">Specific Members</SelectItem>
+                <SelectItem value="all-admins">All Admins</SelectItem>
               </SelectContent>
             </Select>
             {errors.recipientType && (
-              <p className="text-sm text-red-500">{errors.recipientType.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.recipientType.message}
+              </p>
             )}
           </div>
 
@@ -152,7 +187,10 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
             <Select
               value={watchedData.priority}
               onValueChange={(value) => {
-                setValue("priority", value as "low" | "medium" | "high" | "urgent");
+                setValue(
+                  "priority",
+                  value as "low" | "medium" | "high" | "urgent"
+                );
               }}
               disabled={loading}
             >
@@ -161,9 +199,13 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="low">Low - General Information</SelectItem>
-                <SelectItem value="medium">Medium - Important Update</SelectItem>
+                <SelectItem value="medium">
+                  Medium - Important Update
+                </SelectItem>
                 <SelectItem value="high">High - Urgent Notice</SelectItem>
-                <SelectItem value="urgent">Urgent - Immediate Action Needed</SelectItem>
+                <SelectItem value="urgent">
+                  Urgent - Immediate Action Needed
+                </SelectItem>
               </SelectContent>
             </Select>
             {errors.priority && (
@@ -181,7 +223,9 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
               disabled={loading}
             />
             {errors.scheduledFor && (
-              <p className="text-sm text-red-500">{errors.scheduledFor.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.scheduledFor.message}
+              </p>
             )}
             <p className="text-xs text-gray-500">
               Leave empty to send immediately, or choose a future date and time

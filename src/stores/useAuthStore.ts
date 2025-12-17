@@ -13,12 +13,16 @@ interface User {
   avatar?: string;
   emailVerified?: boolean;
   phoneVerified?: boolean;
+  role?: "STUDENT" | "ADMIN" | "SUPER_ADMIN";
+  hostelId?: string | null;
+  updatedAt?: string; // ISO timestamp of last profile update
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
   loading: boolean;
+  initializing: boolean; // Separate state for initial session restore
   error: string | null;
 
   signIn: (data: SignInFormData) => Promise<void>;
@@ -39,6 +43,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       loading: false,
+      initializing: true, // Start as true, will be set to false after session check
       error: null,
 
       // --- Sign In ---
@@ -58,6 +63,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "Sign in failed";
           set({ error: message, loading: false });
+          throw new Error(message);
         }
       },
 
@@ -70,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
 
       // --- Restore Session ---
       restoreSession: async () => {
-        set({ loading: true });
+        set({ initializing: true });
         try {
           const stored = localStorage.getItem("auth-storage");
 
@@ -81,60 +87,88 @@ export const useAuthStore = create<AuthState>()(
             if (token) {
               setAuthToken(token);
               const user = await apiFetch<User>("/auth/me");
-              set({ user, token, loading: false });
+              set({ user, token, initializing: false });
               return;
             }
           }
 
-          set({ loading: false });
+          set({ initializing: false });
         } catch {
           setAuthToken(null);
-          set({ user: null, token: null, loading: false });
+          set({ user: null, token: null, initializing: false });
         }
       },
 
       // --- Fetch Profile ---
       fetchProfile: async () => {
-        set({ loading: true, error: null });
+        // Don't set loading state for background fetches
+        set({ error: null });
         try {
           const user = await apiFetch<User>("/auth/me");
-          set({ user, loading: false });
+          set({ user });
+          if (process.env.NODE_ENV === "development") {
+            console.log("[fetchProfile] Profile synced:", user);
+          }
         } catch (err) {
           const message =
             err instanceof Error ? err.message : "Failed to fetch profile";
-          set({ error: message, loading: false });
+          set({ error: message });
         }
       },
 
       // --- Update Profile ---
       updateProfile: async (formData) => {
-        set({ loading: true });
+        set({ loading: true, error: null });
         try {
-          const updated = await apiFetch<User>("/user/updateProfile", {
+          if (process.env.NODE_ENV === "development") {
+            console.log("[updateProfile] Uploading profile data...");
+          }
+          const updated = await apiFetch<User>("/user/profile", {
             method: "PUT",
             body: formData,
           });
+          if (process.env.NODE_ENV === "development") {
+            console.log("[updateProfile] Received updated user:", updated);
+          }
           set({ user: updated, loading: false });
+          // Refetch to ensure we have the latest data from server
+          try {
+            const latestUser = await apiFetch<User>("/auth/me");
+            if (process.env.NODE_ENV === "development") {
+              console.log(
+                "[updateProfile] Refetched user from /auth/me:",
+                latestUser
+              );
+            }
+            set({ user: latestUser });
+          } catch (error) {
+            if (process.env.NODE_ENV === "development") {
+              console.error("[updateProfile] Refetch failed:", error);
+            }
+            // If refetch fails, still keep the returned user data
+          }
         } catch (err) {
           const message =
             err instanceof Error ? err.message : "Profile update failed";
           set({ error: message, loading: false });
+          throw new Error(message);
         }
       },
 
       // --- Update Password ---
       updatePassword: async (payload) => {
-        set({ loading: true });
+        set({ loading: true, error: null });
         try {
-          await apiFetch("/user/updatePassword", {
+          await apiFetch("/user/password", {
             method: "POST",
             body: JSON.stringify(payload),
           });
-          set({ loading: false });
+          set({ loading: false, error: null });
         } catch (err) {
           const message =
             err instanceof Error ? err.message : "Password update failed";
           set({ error: message, loading: false });
+          throw new Error(message);
         }
       },
     }),

@@ -35,27 +35,67 @@ export default function BroadcastPage() {
   // Fetch messages on component mount and when filters change
   useEffect(() => {
     const loadMessages = async () => {
-      await fetchMessages(currentPage, pageSize, searchQuery, statusFilter, priorityFilter);
+      await fetchMessages(
+        currentPage,
+        pageSize,
+        searchQuery,
+        statusFilter,
+        priorityFilter
+      );
       setIsInitialized(true);
     };
 
     loadMessages();
-  }, [currentPage, pageSize, searchQuery, statusFilter, priorityFilter, fetchMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, statusFilter, priorityFilter]); // fetchMessages is stable
 
   const handleFilterChange = useCallback(() => {
     setCurrentPage(1);
-  }, [setCurrentPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // setCurrentPage is stable
 
   const handleDeleteMessage = async (id: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this message?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this message?"
+    );
     if (confirmed) {
       await deleteMessage(id);
       // Refresh the list
-      await fetchMessages(currentPage, pageSize, searchQuery, statusFilter, priorityFilter);
+      await fetchMessages(
+        currentPage,
+        pageSize,
+        searchQuery,
+        statusFilter,
+        priorityFilter
+      );
     }
   };
 
   const totalPages = Math.ceil(totalMessages / pageSize);
+
+  // Active listening: refresh messages every 30s when tab is visible
+  useEffect(() => {
+    const tick = async () => {
+      if (document.visibilityState !== "visible") return;
+      await fetchMessages(
+        currentPage,
+        pageSize,
+        searchQuery,
+        statusFilter,
+        priorityFilter
+      );
+    };
+    const id = setInterval(tick, 30000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, statusFilter, priorityFilter]);
 
   return (
     <div className="space-y-6">
@@ -83,8 +123,9 @@ export default function BroadcastPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">
-            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalMessages)} of{" "}
-            {totalMessages} messages
+            Showing {(currentPage - 1) * pageSize + 1} to{" "}
+            {Math.min(currentPage * pageSize, totalMessages)} of {totalMessages}{" "}
+            messages
           </p>
           <div className="flex gap-2">
             <Button
@@ -98,7 +139,9 @@ export default function BroadcastPage() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />
@@ -108,7 +151,10 @@ export default function BroadcastPage() {
       )}
 
       {/* Compose Dialog */}
-      <ComposeMessageDialog isOpen={isComposeDialogOpen} onClose={closeComposeDialog} />
+      <ComposeMessageDialog
+        isOpen={isComposeDialogOpen}
+        onClose={closeComposeDialog}
+      />
     </div>
   );
 }

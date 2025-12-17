@@ -30,7 +30,8 @@ export default function HomePage() {
 
   useEffect(() => {
     void fetchAnalytics();
-  }, [fetchAnalytics]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetchAnalytics is stable - run only once on mount
 
   const handleRefresh = () => {
     void fetchAnalytics();
@@ -38,23 +39,34 @@ export default function HomePage() {
 
   const showLoading = loading && !analytics;
 
-  const { bookingStats, statusBreakdown, monthlyRevenue, revenueByHostel, paymentStatus } =
-    analytics || {};
+  const {
+    bookingStats,
+    statusBreakdown,
+    monthlyRevenue,
+    revenueByHostel,
+    paymentStatus,
+  } = analytics || {};
 
   return (
     <div className="p-3 md:px-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
           {analytics && (
             <p className="text-sm text-gray-600">
               Last updated: {new Date(analytics.lastUpdated).toLocaleString()}
             </p>
           )}
         </div>
-        <Button onClick={handleRefresh} variant="outline" disabled={loading} size="sm">
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+        <Button
+          onClick={handleRefresh}
+          variant="outline"
+          disabled={loading}
+          size="sm"
+        >
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -66,8 +78,15 @@ export default function HomePage() {
           <div className="space-y-1">
             <p className="font-medium">Failed to load analytics</p>
             <p className="text-red-700">{error}</p>
-            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Retry
             </Button>
           </div>
@@ -108,7 +127,10 @@ export default function HomePage() {
             />
             <StatsCard
               title="Total Revenue"
-              value={`GHS ${(bookingStats?.totalRevenue || 0).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
+              value={`GHS ${(bookingStats?.totalRevenue || 0).toLocaleString(
+                "en-GH",
+                { minimumFractionDigits: 2 }
+              )}`}
               icon={DollarSign}
               iconColor="text-purple-600"
               iconBgColor="bg-purple-100"
@@ -136,7 +158,9 @@ export default function HomePage() {
             />
             <StatsCard
               title="Avg. Booking Value"
-              value={`GHS ${(bookingStats?.averageBookingValue || 0).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
+              value={`GHS ${(
+                bookingStats?.averageBookingValue || 0
+              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
               icon={TrendingUp}
               iconColor="text-indigo-600"
               iconBgColor="bg-indigo-100"
@@ -161,7 +185,9 @@ export default function HomePage() {
           </>
         ) : (
           <>
-            {statusBreakdown && <StatusDistributionChart data={statusBreakdown} />}
+            {statusBreakdown && (
+              <StatusDistributionChart data={statusBreakdown} />
+            )}
             {monthlyRevenue && <RevenueChart data={monthlyRevenue} />}
           </>
         )}
@@ -176,4 +202,3 @@ export default function HomePage() {
     </div>
   );
 }
-

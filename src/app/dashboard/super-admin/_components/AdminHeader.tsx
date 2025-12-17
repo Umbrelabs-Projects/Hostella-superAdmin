@@ -17,7 +17,6 @@ export default function AdminHeader({ onAddClick }: AdminHeaderProps) {
           <Shield className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Super Admin Panel</h1>
           <p className="text-sm text-gray-600">Manage admin users and hostel assignments</p>
         </div>
       </div>

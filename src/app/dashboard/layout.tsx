@@ -13,29 +13,17 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const { token, loading } = useAuthStore();
+  const { token, initializing } = useAuthStore();
 
   // Protect dashboard route - redirect to home if not authenticated
   useEffect(() => {
-    if (!loading && !token) {
+    if (!initializing && !token) {
       router.push("/");
     }
-  }, [token, loading, router]);
+  }, [token, initializing, router]);
 
-  // Show loading state while checking authentication
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render dashboard if no token
-  if (!token) {
+  // Don't render dashboard if no token and initialization is complete
+  if (!initializing && !token) {
     return null;
   }
 

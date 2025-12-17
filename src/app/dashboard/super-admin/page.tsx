@@ -38,29 +38,41 @@ export default function SuperAdminPage() {
     setCurrentPage,
   } = useAdminStore();
 
-  const { fetchAdmins, fetchHostels } = useAdminApi();
+  const { fetchAdmins } = useAdminApi();
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Fetch admins and hostels on component mount and when filters change
+  // Fetch admins on component mount and when filters change
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        fetchAdmins(currentPage, pageSize, searchQuery, roleFilter, statusFilter),
-        fetchHostels(),
-      ]);
+      await fetchAdmins(
+        currentPage,
+        pageSize,
+        searchQuery,
+        roleFilter,
+        statusFilter
+      );
       setIsInitialized(true);
     };
 
     void loadData();
-  }, [currentPage, pageSize, searchQuery, roleFilter, statusFilter, fetchAdmins, fetchHostels]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, roleFilter, statusFilter]); // fetchAdmins and fetchHostels are stable
 
   const handleFilterChange = useCallback(() => {
     setCurrentPage(1);
-  }, [setCurrentPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // setCurrentPage is stable
 
   const handleRefresh = useCallback(async () => {
-    await fetchAdmins(currentPage, pageSize, searchQuery, roleFilter, statusFilter);
-  }, [currentPage, pageSize, searchQuery, roleFilter, statusFilter, fetchAdmins]);
+    await fetchAdmins(
+      currentPage,
+      pageSize,
+      searchQuery,
+      roleFilter,
+      statusFilter
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, roleFilter, statusFilter]); // fetchAdmins is stable
 
   const handleEditAdmin = (admin: Admin) => {
     openEditDialog(admin);
@@ -72,8 +84,32 @@ export default function SuperAdminPage() {
 
   const totalPages = Math.ceil(totalAdmins / pageSize);
 
+  // Active listening: refresh admins every 60s when tab is visible
+  useEffect(() => {
+    const tick = async () => {
+      if (document.visibilityState !== "visible") return;
+      await fetchAdmins(
+        currentPage,
+        pageSize,
+        searchQuery,
+        roleFilter,
+        statusFilter
+      );
+    };
+    const id = setInterval(tick, 60000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, roleFilter, statusFilter]);
+
   return (
-    <div className="p-3 md:px-6 space-y-6">
+    <div className="p-3 space-y-6">
       {/* Header */}
       <AdminHeader onAddClick={openAddDialog} />
 
@@ -100,7 +136,8 @@ export default function SuperAdminPage() {
         <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
           <div className="text-sm text-gray-600">
             Showing {(currentPage - 1) * pageSize + 1} to{" "}
-            {Math.min(currentPage * pageSize, totalAdmins)} of {totalAdmins} admins
+            {Math.min(currentPage * pageSize, totalAdmins)} of {totalAdmins}{" "}
+            admins
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -113,22 +150,24 @@ export default function SuperAdminPage() {
               Previous
             </Button>
             <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={page === currentPage ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  disabled={loading}
-                  className={
-                    page === currentPage
-                      ? "bg-indigo-600 hover:bg-indigo-700"
-                      : ""
-                  }
-                >
-                  {page}
-                </Button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    disabled={loading}
+                    className={
+                      page === currentPage
+                        ? "bg-indigo-600 hover:bg-indigo-700"
+                        : ""
+                    }
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
             </div>
             <Button
               variant="outline"
@@ -149,7 +188,9 @@ export default function SuperAdminPage() {
       <DeleteAdminDialog
         isOpen={isDeleteDialogOpen}
         onClose={closeDeleteDialog}
-        onSuccess={() => { void handleRefresh(); }}
+        onSuccess={() => {
+          void handleRefresh();
+        }}
       />
     </div>
   );

@@ -2,7 +2,13 @@
 
 import { useCallback } from "react";
 import { apiFetch } from "@/lib/api";
-import { Admin, Hostel, AdminFormData, AdminRole, AdminStatus } from "@/types/admin";
+import {
+  Admin,
+  Hostel,
+  AdminFormData,
+  AdminRole,
+  AdminStatus,
+} from "@/types/admin";
 import { useAdminStore } from "@/stores/useAdminStore";
 import { toast } from "sonner";
 
@@ -25,7 +31,7 @@ export function useAdminApi() {
       pageSize: number = 10,
       search: string = "",
       role: "all" | AdminRole = "all",
-      status: "all" | AdminStatus = "all",
+      status: "all" | AdminStatus = "all"
     ) => {
       setLoading(true);
       setError(null);
@@ -39,17 +45,27 @@ export function useAdminApi() {
         if (role !== "all") params.append("role", role);
         if (status !== "all") params.append("status", status);
 
-        const response = await apiFetch<{
-          admins: Admin[];
-          total: number;
-          page: number;
-          pageSize: number;
-        }>(`/admins?${params.toString()}`, {
+        const response = await apiFetch<
+          | {
+              admins: Admin[];
+              total: number;
+              page: number;
+              pageSize: number;
+              totalPages?: number;
+            }
+          | Admin[]
+        >(`/admins?${params.toString()}`, {
           method: "GET",
         });
 
-        setAdmins(response.admins);
-        setTotalAdmins(response.total);
+        // Backend guarantees clean data per contract: role, status casing, and assignedHostelId handling
+        if (Array.isArray(response)) {
+          setAdmins(response);
+          setTotalAdmins(response.length);
+        } else {
+          setAdmins(response.admins || []);
+          setTotalAdmins(response.total || 0);
+        }
         setLoading(false);
       } catch (error: unknown) {
         const message =
@@ -59,15 +75,20 @@ export function useAdminApi() {
         setLoading(false);
       }
     },
-    [setAdmins, setError, setLoading, setTotalAdmins],
+    [setAdmins, setError, setLoading, setTotalAdmins]
   );
 
   const fetchHostels = useCallback(async () => {
     try {
-      const hostels = await apiFetch<Hostel[]>("/hostels", {
-        method: "GET",
-      });
+      const response = await apiFetch<{ hostels: Hostel[] } | Hostel[]>(
+        "/hostels",
+        {
+          method: "GET",
+        }
+      );
 
+      // Handle both array response and object with hostels property
+      const hostels = Array.isArray(response) ? response : response.hostels;
       setHostels(hostels);
     } catch (error: unknown) {
       const message =
@@ -101,7 +122,7 @@ export function useAdminApi() {
         throw error;
       }
     },
-    [addAdminToStore, setError, setLoading, setSuccess],
+    [addAdminToStore, setError, setLoading, setSuccess]
   );
 
   const updateAdmin = useCallback(
@@ -128,7 +149,7 @@ export function useAdminApi() {
         throw error;
       }
     },
-    [setError, setLoading, setSuccess, updateAdminInStore],
+    [setError, setLoading, setSuccess, updateAdminInStore]
   );
 
   const deleteAdmin = useCallback(
@@ -153,8 +174,27 @@ export function useAdminApi() {
         throw error;
       }
     },
-    [removeAdminFromStore, setError, setLoading, setSuccess],
+    [removeAdminFromStore, setError, setLoading, setSuccess]
   );
+
+  const fetchAvailableAdmins = useCallback(async (): Promise<Admin[]> => {
+    try {
+      const response = await apiFetch<Admin[]>("/admins/available", {
+        method: "GET",
+      });
+
+      // Backend returns only unassigned hostel-admins per contract
+      return response || [];
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch available admins";
+      console.error(message);
+      // Don't toast here as this is used in modals
+      return [];
+    }
+  }, []);
 
   return {
     fetchAdmins,
@@ -162,5 +202,6 @@ export function useAdminApi() {
     createAdmin,
     updateAdmin,
     deleteAdmin,
+    fetchAvailableAdmins,
   };
 }

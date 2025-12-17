@@ -72,7 +72,7 @@ export default function AdminCard({
         </div>
 
         {/* Status Badge */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Badge
             variant="secondary"
             className={`text-[10px] px-2 py-0.5 font-medium ${

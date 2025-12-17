@@ -103,10 +103,8 @@ export default function BroadcastList({
               <TableCell className="font-medium max-w-xs truncate">{message.title}</TableCell>
               <TableCell>
                 <span className="text-sm text-gray-600">
-                  {message.recipientType === "all-residents" && "All Residents"}
                   {message.recipientType === "all-members" && "All Members"}
-                  {message.recipientType === "specific-members" &&
-                    `${message.recipientCount} Members`}
+                  {message.recipientType === "all-admins" && "All Admins"}
                 </span>
               </TableCell>
               <TableCell>

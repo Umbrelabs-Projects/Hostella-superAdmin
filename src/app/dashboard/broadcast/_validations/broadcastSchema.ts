@@ -16,24 +16,15 @@ export const broadcastMessageSchema = z
       .min(10, "Content must be at least 10 characters")
       .max(5000, "Content must be less than 5000 characters"),
 
-    recipientType: z.enum(["all-residents", "all-members", "specific-members"]),
+    recipientType: z.enum(["all-members", "all-admins"]),
 
-    selectedRecipients: z.array(z.string()),
+    selectedRecipients: z.array(z.string()).optional(),
 
     priority: z.enum(["low", "medium", "high", "urgent"]),
 
     scheduledFor: z.string(),
   })
   .superRefine((data, ctx) => {
-    // Validate selectedRecipients if specific-members is selected
-    if (data.recipientType === "specific-members" && data.selectedRecipients.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["selectedRecipients"],
-        message: "Please select at least one recipient for targeted messaging",
-      });
-    }
-
     // Validate scheduledFor if provided
     if (data.scheduledFor) {
       const scheduledDate = new Date(data.scheduledFor);

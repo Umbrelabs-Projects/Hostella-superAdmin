@@ -128,7 +128,7 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
             <Select
               value={recipientType}
               onValueChange={(value) => {
-                setValue("recipientType", value as "all-residents" | "all-members" | "specific-members");
+                setValue("recipientType", value as "all-members" | "all-admins");
               }}
               disabled={loading}
             >
@@ -136,9 +136,8 @@ export default function ComposeMessageDialog({ isOpen, onClose }: ComposeMessage
                 <SelectValue placeholder="Select recipients" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-residents">All Residents</SelectItem>
                 <SelectItem value="all-members">All Members</SelectItem>
-                <SelectItem value="specific-members">Specific Members</SelectItem>
+                <SelectItem value="all-admins">All Admins</SelectItem>
               </SelectContent>
             </Select>
             {errors.recipientType && (

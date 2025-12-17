@@ -57,7 +57,7 @@ export interface BroadcastState {
 const defaultComposer: BroadcastComposer = {
   title: "",
   content: "",
-  recipientType: "all-residents",
+  recipientType: "all-members",
   selectedRecipients: [],
   priority: "medium",
   scheduledFor: "",

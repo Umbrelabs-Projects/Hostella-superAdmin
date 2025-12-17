@@ -81,9 +81,13 @@ export default function ComposeMessageDialog({
       };
 
       if (data.scheduledFor) {
+        // Convert datetime-local format to ISO 8601 with timezone
+        const scheduledDate = new Date(data.scheduledFor);
+        const scheduledForISO = scheduledDate.toISOString();
+        
         await scheduleMessage({
           ...payload,
-          scheduledFor: data.scheduledFor,
+          scheduledFor: scheduledForISO,
         });
       } else {
         await sendMessage(payload);

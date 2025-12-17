@@ -238,6 +238,15 @@ AND status = 'active'
 - Active accounts only
 - Exclude suspended or inactive accounts
 
+**⚠️ IMPORTANT:** If no members exist in the database yet, the backend should return a clear error:
+```json
+{
+  "success": false,
+  "message": "No active members found. Please ensure member accounts exist before sending broadcasts.",
+  "statusCode": 400
+}
+```
+
 ---
 
 ### For `recipientType: "all-admins"`
@@ -252,6 +261,83 @@ AND status = 'active'
 - Hostel admins (both assigned and unassigned)
 - Active accounts only
 - Exclude suspended or inactive accounts
+
+**Note:** Based on the admin management system, admin roles are:
+- `"super-admin"` (lowercase with hyphen)
+- `"hostel-admin"` (lowercase with hyphen)
+
+**⚠️ IMPORTANT:** There should ALWAYS be at least one super-admin (the current user sending the broadcast). If the query returns 0 results, check:
+1. Role name format in database (must be `"super-admin"` or `"hostel-admin"`, not `"SuperAdmin"` or `"Super Admin"`)
+2. Status of admin accounts (must be `"active"`)
+
+---
+
+## Backend Implementation Guidance
+
+### Step 1: Recipient Resolution Function
+```javascript
+async function resolveRecipients(recipientType) {
+  let roleFilter = [];
+  
+  if (recipientType === 'all-members') {
+    roleFilter = ['member', 'resident', 'student'];
+  } else if (recipientType === 'all-admins') {
+    roleFilter = ['super-admin', 'hostel-admin'];
+  }
+  
+  const recipients = await User.findAll({
+    where: {
+      role: { [Op.in]: roleFilter },
+      status: 'active'
+    }
+  });
+  
+  if (recipients.length === 0) {
+    if (recipientType === 'all-members') {
+      throw AppError.badRequest(
+        'No active members found. Please ensure member accounts exist before sending broadcasts to members.'
+      );
+    } else {
+      throw AppError.badRequest(
+        'No active admins found. This should not happen. Please check admin account statuses.'
+      );
+    }
+  }
+  
+  return recipients;
+}
+```
+
+### Step 2: Database Role Values
+Ensure your database uses these exact role values:
+- **For Admins:** `"super-admin"`, `"hostel-admin"` (lowercase, hyphenated)
+- **For Members:** `"member"`, `"resident"`, or `"student"` (lowercase)
+
+### Step 3: Debugging "No recipients found"
+If you're getting "No recipients found", check:
+
+1. **Check actual role values in database:**
+```sql
+SELECT DISTINCT role FROM users;
+```
+
+2. **Check admin count:**
+```sql
+SELECT COUNT(*) FROM users 
+WHERE role IN ('super-admin', 'hostel-admin') 
+AND status = 'active';
+```
+
+3. **Check member count:**
+```sql
+SELECT COUNT(*) FROM users 
+WHERE role IN ('member', 'resident', 'student') 
+AND status = 'active';
+```
+
+4. **If roles are different (e.g., "admin" instead of "super-admin"):**
+   - Update the recipient resolution logic to match your actual role values
+   - OR update your database to use the standard role values
 
 ---
 
@@ -329,7 +415,7 @@ All endpoints should return consistent error responses:
 ```typescript
 {
   success: false,
-  message: string;              // User-friendly error message
+  message: string;              // SHORT, user-friendly error message (50-100 chars max)
   statusCode: number;           // HTTP status code
   timestamp: string;            // ISO 8601 timestamp
   errors?: {                    // Validation errors (optional)
@@ -338,6 +424,76 @@ All endpoints should return consistent error responses:
   }[];
 }
 ```
+
+### ⚠️ CRITICAL: Error Message Guidelines
+
+**DO NOT send to frontend:**
+- ❌ Stack traces
+- ❌ Database error details
+- ❌ Long Prisma validation errors
+- ❌ Internal file paths
+- ❌ Sensitive system information
+
+**DO send to frontend:**
+- ✅ Short, actionable error messages
+- ✅ What went wrong in plain language
+- ✅ What the user should do to fix it
+
+**Example Error Handling:**
+
+```javascript
+// ❌ BAD - Sending raw Prisma error to frontend
+catch (error) {
+  return res.status(500).json({
+    success: false,
+    message: error.message,  // Contains Prisma internals, stack trace, etc.
+    statusCode: 500,
+    stack: error.stack
+  });
+}
+
+// ✅ GOOD - Clean error for frontend, details in console
+catch (error) {
+  // Log full error details to console for debugging
+  console.error('Broadcast creation failed:', {
+    error: error.message,
+    stack: error.stack,
+    data: sanitizedData  // Don't log sensitive data
+  });
+  
+  // Return clean, user-friendly error to frontend
+  return res.status(500).json({
+    success: false,
+    message: 'Failed to create broadcast message. Please try again.',
+    statusCode: 500,
+    timestamp: new Date().toISOString()
+  });
+}
+```
+
+### Common Error Messages
+
+**Validation Errors (400):**
+- `"Please provide a message title between 5-100 characters"`
+- `"Message content must be between 10-5000 characters"`
+- `"Please select recipients (All Members or All Admins)"`
+- `"Scheduled time must be in the future"`
+
+**No Recipients Found (400):**
+- `"No active members found to send the message to"`
+- `"No active admins found to send the message to"`
+
+**Authentication/Authorization (401/403):**
+- `"Please log in to send broadcast messages"`
+- `"Only super admins can send broadcast messages"`
+
+**Not Found (404):**
+- `"Broadcast message not found"`
+
+**Server Errors (500):**
+- `"Failed to send broadcast message. Please try again."`
+- `"Failed to schedule message. Please try again."`
+- `"Failed to fetch broadcast messages. Please try again."`
 
 ---
 

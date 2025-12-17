@@ -20,6 +20,8 @@ API_URL=https://your-backend-api.com
 ## Key Docs (read in order)
 1) [BACKEND_HANDOFF.md](BACKEND_HANDOFF.md) – backend integration overview and expectations  
 2) [API_INTEGRATION_DOCS.md](API_INTEGRATION_DOCS.md) – full endpoint specifications
+3) [BACKEND_ALIGNMENT_CHANGES.md](BACKEND_ALIGNMENT_CHANGES.md) – recent backend v1 alignment changes (Dec 2025)
+4) [BACKEND_ALIGNMENT_QUICK_REF.md](BACKEND_ALIGNMENT_QUICK_REF.md) – quick reference for backend changes
 
 ## Testing
 

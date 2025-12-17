@@ -31,17 +31,27 @@ export function useBookingApi() {
       if (search) params.append("search", search);
       if (status !== "all") params.append("status", status);
 
-      const response = await apiFetch<{
-        bookings: StudentBooking[];
-        total: number;
-        page: number;
-        pageSize: number;
-      }>(`/bookings?${params.toString()}`, {
+      const response = await apiFetch<
+        | {
+            bookings: StudentBooking[];
+            total: number;
+            page: number;
+            pageSize: number;
+            totalPages?: number;
+          }
+        | StudentBooking[]
+      >(`/bookings?${params.toString()}`, {
         method: "GET",
       });
 
-      setBookings(response.bookings);
-      setTotalBookings(response.total);
+      // Handle both response formats
+      if (Array.isArray(response)) {
+        setBookings(response);
+        setTotalBookings(response.length);
+      } else {
+        setBookings(response.bookings || []);
+        setTotalBookings(response.total || 0);
+      }
       setLoading(false);
     } catch (error: unknown) {
       const message =
@@ -51,7 +61,10 @@ export function useBookingApi() {
     }
   };
 
-  const updateBooking = async (bookingId: string, updates: Partial<StudentBooking>) => {
+  const updateBooking = async (
+    bookingId: string,
+    updates: Partial<StudentBooking>
+  ) => {
     setLoading(true);
     setError(null);
     try {

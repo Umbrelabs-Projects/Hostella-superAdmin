@@ -7,8 +7,16 @@ export interface Hostel {
   id: string;
   name: string;
   location: string;
-  capacity: number;
+  campus: string;
+  phone: string;
+  floors: number;
+  totalRooms: number;
+  singleRooms: number;
+  doubleRooms: number;
+  facilities: string[]; // e.g., ["Wi-Fi", "Laundry", "Gym", "Study Room"]
   hasAdmin: boolean; // Tracks if hostel already has an admin assigned
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Admin {

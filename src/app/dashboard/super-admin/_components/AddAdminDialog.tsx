@@ -194,7 +194,7 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
               <SelectContent>
                 {availableHostels.map((hostel) => (
                   <SelectItem key={hostel.id} value={hostel.id}>
-                    {hostel.name} - {hostel.location} (Capacity: {hostel.capacity})
+                    {hostel.name} - {hostel.location} (Rooms: {hostel.totalRooms})
                   </SelectItem>
                 ))}
               </SelectContent>

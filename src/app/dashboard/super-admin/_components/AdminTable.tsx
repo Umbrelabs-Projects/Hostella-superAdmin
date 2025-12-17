@@ -17,7 +17,11 @@ import { Loader2, Edit, Trash2, Building2 } from "lucide-react";
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
 };
 
 const formatRelativeTime = (dateString?: string) => {
@@ -67,8 +71,16 @@ const getStatusBadgeColor = (status: Admin["status"]) => {
   }
 };
 
-export default function AdminTable({ admins, loading, onEdit, onDelete }: AdminTableProps) {
-  if (loading && admins.length === 0) {
+export default function AdminTable({
+  admins,
+  loading,
+  onEdit,
+  onDelete,
+}: AdminTableProps) {
+  // Ensure admins is always an array
+  const adminList = Array.isArray(admins) ? admins : [];
+
+  if (loading && adminList.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
@@ -76,10 +88,12 @@ export default function AdminTable({ admins, loading, onEdit, onDelete }: AdminT
     );
   }
 
-  if (admins.length === 0) {
+  if (adminList.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-        <p className="text-gray-600">No admins found. Click &quot;Add New Admin&quot; to get started.</p>
+        <p className="text-gray-600">
+          No admins found. Click &quot;Add New Admin&quot; to get started.
+        </p>
       </div>
     );
   }
@@ -97,27 +111,37 @@ export default function AdminTable({ admins, loading, onEdit, onDelete }: AdminT
               <TableHead className="font-semibold">Assigned Hostel</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold">Last Login</TableHead>
-              <TableHead className="font-semibold text-right">Actions</TableHead>
+              <TableHead className="font-semibold text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {admins.map((admin) => (
+            {adminList.map((admin) => (
               <TableRow key={admin.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium">
                   {admin.firstName} {admin.lastName}
                 </TableCell>
-                <TableCell className="text-sm text-gray-600">{admin.email}</TableCell>
-                <TableCell className="text-sm text-gray-600">{admin.phone}</TableCell>
+                <TableCell className="text-sm text-gray-600">
+                  {admin.email}
+                </TableCell>
+                <TableCell className="text-sm text-gray-600">
+                  {admin.phone}
+                </TableCell>
                 <TableCell>
                   <Badge className={getRoleBadgeColor(admin.role)}>
-                    {admin.role === "super-admin" ? "Super Admin" : "Hostel Admin"}
+                    {admin.role === "super-admin"
+                      ? "Super Admin"
+                      : "Hostel Admin"}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   {admin.assignedHostelName ? (
                     <div className="flex items-center gap-2 text-sm">
                       <Building2 className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-900">{admin.assignedHostelName}</span>
+                      <span className="text-gray-900">
+                        {admin.assignedHostelName}
+                      </span>
                     </div>
                   ) : (
                     <span className="text-sm text-gray-400">Not assigned</span>
@@ -125,7 +149,8 @@ export default function AdminTable({ admins, loading, onEdit, onDelete }: AdminT
                 </TableCell>
                 <TableCell>
                   <Badge className={getStatusBadgeColor(admin.status)}>
-                    {admin.status.charAt(0).toUpperCase() + admin.status.slice(1)}
+                    {admin.status.charAt(0).toUpperCase() +
+                      admin.status.slice(1)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-sm text-gray-600">

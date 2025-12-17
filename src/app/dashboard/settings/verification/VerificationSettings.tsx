@@ -1,15 +1,9 @@
 "use client";
-import { useEffect } from "react";
 import VerificationItem from "./components/VerificationItem";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export default function VerificationSettings() {
   const user = useAuthStore((s) => s.user);
-  const fetchProfile = useAuthStore((s) => s.fetchProfile);
-
-  useEffect(() => {
-    void fetchProfile();
-  }, [fetchProfile]);
 
   const verificationStatus = {
     email: {

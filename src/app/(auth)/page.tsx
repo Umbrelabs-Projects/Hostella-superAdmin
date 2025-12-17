@@ -9,14 +9,14 @@ import SidebarImage from "./_components/SidebarImage";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { token, loading } = useAuthStore();
+  const { token, initializing } = useAuthStore();
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
-    if (!loading && token) {
+    if (!initializing && token) {
       router.push(ROUTES.dashboard);
     }
-  }, [token, loading, router]);
+  }, [token, initializing, router]);
 
   return (
     <div className="relative flex w-full h-screen">

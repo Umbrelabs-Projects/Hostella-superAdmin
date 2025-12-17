@@ -7,6 +7,7 @@ import {
   MessageCircleMoreIcon,
   Settings,
   Shield,
+  Building2,
 } from "lucide-react";
 import SideNavHeader from "./SideNavHeader";
 import SideNavLink from "./SideNavLink";
@@ -22,6 +23,11 @@ export default function SideNav({ closeMenu }: SideNavProps) {
   const navItems = [
     { title: "Home", icon: BookIcon, url: "/dashboard" },
     { title: "Super Admin", icon: Shield, url: "/dashboard/super-admin" },
+    {
+      title: "Hostels",
+      icon: Building2,
+      url: "/dashboard/hostels",
+    },
     {
       title: "Broadcast Message",
       icon: MessageCircleMoreIcon,

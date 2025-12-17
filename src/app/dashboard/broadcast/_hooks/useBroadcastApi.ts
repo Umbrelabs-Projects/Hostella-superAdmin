@@ -3,7 +3,12 @@
 import { useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { useBroadcastStore } from "@/stores/useBroadcastStore";
-import { BroadcastMessage, BroadcastComposer, BroadcastMessageStatus, BroadcastPriority } from "@/types/broadcast";
+import {
+  BroadcastMessage,
+  BroadcastComposer,
+  BroadcastMessageStatus,
+  BroadcastPriority,
+} from "@/types/broadcast";
 import { toast } from "sonner";
 
 export function useBroadcastApi() {
@@ -24,7 +29,7 @@ export function useBroadcastApi() {
       pageSize: number = 10,
       search: string = "",
       status: "all" | BroadcastMessageStatus = "all",
-      priority: "all" | BroadcastPriority = "all",
+      priority: "all" | BroadcastPriority = "all"
     ) => {
       setLoading(true);
       setError(null);
@@ -38,17 +43,27 @@ export function useBroadcastApi() {
         if (status !== "all") params.append("status", status);
         if (priority !== "all") params.append("priority", priority);
 
-        const response = await apiFetch<{
-          messages: BroadcastMessage[];
-          total: number;
-          page: number;
-          pageSize: number;
-        }>(`/broadcasts?${params.toString()}`, {
+        const response = await apiFetch<
+          | {
+              messages: BroadcastMessage[];
+              total: number;
+              page: number;
+              pageSize: number;
+              totalPages?: number;
+            }
+          | BroadcastMessage[]
+        >(`/broadcasts?${params.toString()}`, {
           method: "GET",
         });
 
-        setMessages(response.messages);
-        setTotalMessages(response.total);
+        // Handle both response formats
+        if (Array.isArray(response)) {
+          setMessages(response);
+          setTotalMessages(response.length);
+        } else {
+          setMessages(response.messages || []);
+          setTotalMessages(response.total || 0);
+        }
         setLoading(false);
       } catch (error: unknown) {
         const message =
@@ -58,7 +73,7 @@ export function useBroadcastApi() {
         setLoading(false);
       }
     },
-    [setLoading, setError, setMessages, setTotalMessages],
+    [setLoading, setError, setMessages, setTotalMessages]
   );
 
   const sendMessage = useCallback(
@@ -85,7 +100,7 @@ export function useBroadcastApi() {
         throw error;
       }
     },
-    [addMessageToStore, setError, setLoading, setSuccess],
+    [addMessageToStore, setError, setLoading, setSuccess]
   );
 
   const scheduleMessage = useCallback(
@@ -98,7 +113,7 @@ export function useBroadcastApi() {
           {
             method: "POST",
             body: JSON.stringify(message),
-          },
+          }
         );
 
         addMessageToStore(scheduledMessage);
@@ -115,7 +130,7 @@ export function useBroadcastApi() {
         throw error;
       }
     },
-    [addMessageToStore, setError, setLoading, setSuccess],
+    [addMessageToStore, setError, setLoading, setSuccess]
   );
 
   const updateMessage = useCallback(
@@ -128,7 +143,7 @@ export function useBroadcastApi() {
           {
             method: "PUT",
             body: JSON.stringify(updates),
-          },
+          }
         );
 
         updateMessageInStore(updated);
@@ -145,7 +160,7 @@ export function useBroadcastApi() {
         throw error;
       }
     },
-    [setError, setLoading, setSuccess, updateMessageInStore],
+    [setError, setLoading, setSuccess, updateMessageInStore]
   );
 
   const deleteMessage = useCallback(
@@ -170,7 +185,7 @@ export function useBroadcastApi() {
         throw error;
       }
     },
-    [removeMessageFromStore, setError, setLoading, setSuccess],
+    [removeMessageFromStore, setError, setLoading, setSuccess]
   );
 
   return {
@@ -181,4 +196,3 @@ export function useBroadcastApi() {
     deleteMessage,
   };
 }
-

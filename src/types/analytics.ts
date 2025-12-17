@@ -56,6 +56,12 @@ export interface PaymentStatus {
   collectionRate: number;
 }
 
+export interface RevenueTrend {
+  currentPeriod: number;
+  previousPeriod: number;
+  percentageChange: number;
+}
+
 export interface DashboardAnalytics {
   bookingStats: BookingStats;
   genderDistribution: GenderDistribution[];
@@ -63,5 +69,7 @@ export interface DashboardAnalytics {
   revenueByHostel: RevenueByHostel[];
   monthlyRevenue: MonthlyRevenue[];
   paymentStatus: PaymentStatus;
+  recentBookings?: number;
+  revenueTrend?: RevenueTrend;
   lastUpdated: string;
 }

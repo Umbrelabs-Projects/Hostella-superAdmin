@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useHostelStore } from "@/stores/useHostelStore";
 import { useHostelApi } from "./_hooks/useHostelApi";
+import { useAdminApi } from "../super-admin/_hooks/useAdminApi";
 import HostelList from "./_components/HostelList";
 import EditHostelDialog from "./_components/EditHostelDialog";
 import DeleteHostelDialog from "./_components/DeleteHostelDialog";
@@ -17,6 +18,7 @@ import CreateHostelDialog from "./_components/CreateHostelDialog";
 
 export default function HostelsPage() {
   const { fetchHostels, loading } = useHostelApi();
+  const { fetchAdmins } = useAdminApi();
   const {
     hostels,
     total,
@@ -36,7 +38,27 @@ export default function HostelsPage() {
   const [selectedHostel, setLocalSelectedHostel] = useState<Hostel | null>(
     null
   );
+  const [searchInput, setSearchInput] = useState(searchQuery);
 
+  // Keep admin list fresh (hostel-admins only) on mount and when tab becomes visible
+  useEffect(() => {
+    const loadAdmins = async () => {
+      if (document.visibilityState !== "visible") return;
+      await fetchAdmins(1, 200, "", "hostel-admin", "all");
+    };
+
+    void loadAdmins();
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void loadAdmins();
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchAdmins]);
+
+  // Initial and on-change fetch
   useEffect(() => {
     const loadHostels = async () => {
       try {
@@ -51,10 +73,17 @@ export default function HostelsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchQuery]);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setPage(1);
-  };
+  // Debounce search input updates to reduce fetch frequency
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (searchInput !== searchQuery) {
+        setSearchQuery(searchInput);
+        setPage(1);
+      }
+    }, 300);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const handleEdit = (hostel: Hostel) => {
     setLocalSelectedHostel(hostel);
@@ -73,12 +102,19 @@ export default function HostelsPage() {
   };
 
   const handleSuccess = async () => {
-    // Reset to page 1 and reload data
     setPage(1);
-    // Reload immediately with page 1
     try {
-      const data = await fetchHostels(1, 10, searchQuery);
-      setHostels(data.hostels, data.total, 1, data.totalPages);
+      const [hostelsData] = await Promise.all([
+        fetchHostels(1, 10, searchQuery),
+        fetchAdmins(1, 200, "", "hostel-admin", "all"),
+      ]);
+
+      setHostels(
+        hostelsData.hostels,
+        hostelsData.total,
+        1,
+        hostelsData.totalPages
+      );
     } catch (error) {
       console.error("Failed to reload hostels:", error);
     }
@@ -93,8 +129,8 @@ export default function HostelsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search hostels..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10"
             />
           </div>

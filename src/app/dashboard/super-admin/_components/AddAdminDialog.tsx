@@ -4,7 +4,12 @@
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +31,10 @@ interface AddAdminDialogProps {
   onClose: () => void;
 }
 
-export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps) {
+export default function AddAdminDialog({
+  isOpen,
+  onClose,
+}: AddAdminDialogProps) {
   const { loading, error, hostels } = useAdminStore();
   const { createAdmin, fetchHostels } = useAdminApi();
 
@@ -42,7 +50,14 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
     },
   });
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = form;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = form;
   const selectedRole = watch("role");
   const selectedHostelId = watch("assignedHostelId");
 
@@ -75,7 +90,12 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
           <DialogTitle>Add New Admin</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
+          className="space-y-6"
+        >
           {/* Error Alert */}
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 flex items-start gap-2">
@@ -95,7 +115,9 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
                 disabled={loading}
               />
               {errors.firstName && (
-                <p className="text-sm text-red-500">{errors.firstName.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.firstName.message}
+                </p>
               )}
             </div>
 
@@ -108,7 +130,9 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
                 disabled={loading}
               />
               {errors.lastName && (
-                <p className="text-sm text-red-500">{errors.lastName.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.lastName.message}
+                </p>
               )}
             </div>
           </div>
@@ -151,6 +175,9 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
               value={selectedRole}
               onValueChange={(value) => {
                 setValue("role", value as "super-admin" | "hostel-admin");
+                if (value === "super-admin") {
+                  setValue("assignedHostelId", "");
+                }
               }}
               disabled={loading}
             >
@@ -158,8 +185,12 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
                 <SelectValue placeholder="Select admin role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="super-admin">Super Admin - Full System Access</SelectItem>
-                <SelectItem value="hostel-admin">Hostel Admin - Hostel Management</SelectItem>
+                <SelectItem value="super-admin">
+                  Super Admin - Full System Access
+                </SelectItem>
+                <SelectItem value="hostel-admin">
+                  Hostel Admin - Hostel Management
+                </SelectItem>
               </SelectContent>
             </Select>
             {errors.role && (
@@ -175,40 +206,60 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
           {/* Hostel Assignment */}
           <div className="space-y-2">
             <Label htmlFor="assignedHostelId">
-              Assign Hostel * {selectedRole === "hostel-admin" && <span className="text-red-500">(Required)</span>}
+              Assign Hostel *{" "}
+              {selectedRole === "hostel-admin" && (
+                <span className="text-red-500">(Required)</span>
+              )}
             </Label>
             <Select
               value={selectedHostelId}
               onValueChange={(value) => {
                 setValue("assignedHostelId", value);
               }}
-              disabled={loading || availableHostels.length === 0}
+              disabled={
+                loading ||
+                selectedRole === "super-admin" ||
+                availableHostels.length === 0
+              }
             >
               <SelectTrigger id="assignedHostelId">
-                <SelectValue placeholder={
-                  availableHostels.length === 0
-                    ? "No hostels available"
-                    : "Select a hostel"
-                } />
+                <SelectValue
+                  placeholder={
+                    selectedRole === "super-admin"
+                      ? "Super admins cannot be assigned to a hostel"
+                      : availableHostels.length === 0
+                      ? "No hostels available"
+                      : "Select a hostel"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {availableHostels.map((hostel) => (
                   <SelectItem key={hostel.id} value={hostel.id}>
-                    {hostel.name} - {hostel.location} (Rooms: {hostel.totalRooms})
+                    {hostel.name} - {hostel.location} (Rooms:{" "}
+                    {hostel.totalRooms})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {errors.assignedHostelId && (
-              <p className="text-sm text-red-500">{errors.assignedHostelId.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.assignedHostelId.message}
+              </p>
             )}
-            {availableHostels.length === 0 ? (
+            {selectedRole === "super-admin" ? (
+              <p className="text-xs text-gray-500">
+                Super admins are not tied to a hostel.
+              </p>
+            ) : availableHostels.length === 0 ? (
               <p className="text-xs text-red-500">
-                ⚠️ All hostels already have admins assigned. Please remove an existing admin to assign a new one.
+                ⚠️ All hostels already have admins assigned. Please remove an
+                existing admin to assign a new one.
               </p>
             ) : (
               <p className="text-xs text-gray-500">
-                ℹ️ Each hostel can only have one admin. {availableHostels.length} hostel(s) available for assignment.
+                ℹ️ Each hostel can only have one admin.{" "}
+                {availableHostels.length} hostel(s) available for assignment.
               </p>
             )}
           </div>
@@ -226,7 +277,11 @@ export default function AddAdminDialog({ isOpen, onClose }: AddAdminDialogProps)
             <Button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700"
-              disabled={loading || availableHostels.length === 0}
+              disabled={
+                loading ||
+                (selectedRole === "hostel-admin" &&
+                  availableHostels.length === 0)
+              }
             >
               {loading ? (
                 <>

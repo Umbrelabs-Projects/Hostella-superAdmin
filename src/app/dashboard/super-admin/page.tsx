@@ -38,22 +38,19 @@ export default function SuperAdminPage() {
     setCurrentPage,
   } = useAdminStore();
 
-  const { fetchAdmins, fetchHostels } = useAdminApi();
+  const { fetchAdmins } = useAdminApi();
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Fetch admins and hostels on component mount and when filters change
+  // Fetch admins on component mount and when filters change
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        fetchAdmins(
-          currentPage,
-          pageSize,
-          searchQuery,
-          roleFilter,
-          statusFilter
-        ),
-        fetchHostels(),
-      ]);
+      await fetchAdmins(
+        currentPage,
+        pageSize,
+        searchQuery,
+        roleFilter,
+        statusFilter
+      );
       setIsInitialized(true);
     };
 
@@ -87,8 +84,32 @@ export default function SuperAdminPage() {
 
   const totalPages = Math.ceil(totalAdmins / pageSize);
 
+  // Active listening: refresh admins every 60s when tab is visible
+  useEffect(() => {
+    const tick = async () => {
+      if (document.visibilityState !== "visible") return;
+      await fetchAdmins(
+        currentPage,
+        pageSize,
+        searchQuery,
+        roleFilter,
+        statusFilter
+      );
+    };
+    const id = setInterval(tick, 60000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, roleFilter, statusFilter]);
+
   return (
-    <div className="p-3 md:px-6 space-y-6">
+    <div className="p-3 space-y-6">
       {/* Header */}
       <AdminHeader onAddClick={openAddDialog} />
 

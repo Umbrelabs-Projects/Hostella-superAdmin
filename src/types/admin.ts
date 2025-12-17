@@ -14,7 +14,7 @@ export interface Hostel {
   singleRooms: number;
   doubleRooms: number;
   facilities: string[]; // e.g., ["Wi-Fi", "Laundry", "Gym", "Study Room"]
-  hasAdmin: boolean; // Tracks if hostel already has an admin assigned
+  hasAdmin: boolean; // False by default when created, true when admin is assigned
   createdAt?: string;
   updatedAt?: string;
 }

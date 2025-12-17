@@ -32,9 +32,7 @@ export default function HostelList({
   if (hostelList.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-        <p className="text-gray-600">
-          No hostels found. Click "Create Hostel" to get started.
-        </p>
+        <p className="text-gray-600">No hostels found.</p>
       </div>
     );
   }
@@ -107,8 +105,12 @@ export default function HostelList({
                       variant="ghost"
                       size="icon"
                       onClick={() => onAssignAdmin(hostel)}
-                      title="Assign admin"
-                      disabled={hostel.hasAdmin}
+                      title={hostel.hasAdmin ? "Manage admin" : "Assign admin"}
+                      className={
+                        hostel.hasAdmin
+                          ? "text-orange-600 hover:bg-orange-50"
+                          : ""
+                      }
                     >
                       <UserPlus className="h-4 w-4" />
                     </Button>

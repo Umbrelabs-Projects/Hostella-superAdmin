@@ -73,6 +73,30 @@ export default function BroadcastPage() {
 
   const totalPages = Math.ceil(totalMessages / pageSize);
 
+  // Active listening: refresh messages every 30s when tab is visible
+  useEffect(() => {
+    const tick = async () => {
+      if (document.visibilityState !== "visible") return;
+      await fetchMessages(
+        currentPage,
+        pageSize,
+        searchQuery,
+        statusFilter,
+        priorityFilter
+      );
+    };
+    const id = setInterval(tick, 30000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery, statusFilter, priorityFilter]);
+
   return (
     <div className="space-y-6">
       {/* Header */}

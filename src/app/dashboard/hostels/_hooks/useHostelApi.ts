@@ -122,6 +122,28 @@ export function useHostelApi() {
     }
   };
 
+  const unassignAdmin = async (
+    hostelId: string,
+    adminId: string
+  ): Promise<Hostel> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const hostel = await apiFetch<Hostel>(`/hostels/unassign-admin`, {
+        method: "PATCH",
+        body: JSON.stringify({ hostelId, adminId }),
+      });
+      return hostel;
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to unassign admin";
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -130,5 +152,6 @@ export function useHostelApi() {
     updateHostel,
     deleteHostel,
     assignAdmin,
+    unassignAdmin,
   };
 }

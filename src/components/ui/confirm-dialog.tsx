@@ -1,7 +1,14 @@
-"use client"
+"use client";
 
 import * as React from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
@@ -11,6 +18,7 @@ interface ConfirmDialogProps {
   description?: string;
   confirmLabel?: string;
   onConfirm?: () => void;
+  confirmVariant?: "default" | "destructive";
 }
 
 export default function ConfirmDialog({
@@ -20,6 +28,7 @@ export default function ConfirmDialog({
   description,
   confirmLabel = "OK",
   onConfirm,
+  confirmVariant = "destructive",
 }: ConfirmDialogProps) {
   const handleConfirm = React.useCallback(() => {
     onConfirm?.();
@@ -34,10 +43,16 @@ export default function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogTitle>{title}</DialogTitle>
-        {description && <DialogDescription>{description}</DialogDescription>}
+        <DialogDescription>
+          {description || "Please confirm this action."}
+        </DialogDescription>
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-          <Button variant="destructive" onClick={handleConfirm}>{confirmLabel}</Button>
+          <Button variant="outline" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button variant={confirmVariant} onClick={handleConfirm}>
+            {confirmLabel}
+          </Button>
         </DialogFooter>
         <DialogClose />
       </DialogContent>

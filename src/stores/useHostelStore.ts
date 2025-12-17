@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Hostel } from "@/types/admin";
+import { Hostel, Admin } from "@/types/admin";
 
 interface HostelState {
   hostels: Hostel[];
@@ -13,7 +13,8 @@ interface HostelState {
     hostels: Hostel[],
     total: number,
     page: number,
-    totalPages: number
+    totalPages: number,
+    admins?: Admin[]
   ) => void;
   setSelectedHostel: (hostel: Hostel | null) => void;
   addHostel: (hostel: Hostel) => void;
@@ -32,8 +33,28 @@ export const useHostelStore = create<HostelState>((set) => ({
   totalPages: 0,
   searchQuery: "",
 
-  setHostels: (hostels, total, page, totalPages) =>
-    set({ hostels, total, page, totalPages }),
+  setHostels: (hostels, total, page, totalPages, admins?: Admin[]) => {
+    // Normalize hasAdmin based on whether an admin is actually assigned
+    // This prevents inconsistencies where hasAdmin is true but no admin exists
+    const normalizedHostels = hostels.map((hostel) => {
+      // If admins list is provided, check if any admin is assigned to this hostel
+      if (admins && Array.isArray(admins)) {
+        const hasAssignedAdmin = admins.some(
+          (admin) => admin.assignedHostelId === hostel.id
+        );
+        return {
+          ...hostel,
+          hasAdmin: hasAssignedAdmin,
+        };
+      }
+      // Otherwise, trust the hasAdmin field but default to false if undefined
+      return {
+        ...hostel,
+        hasAdmin: hostel.hasAdmin ?? false,
+      };
+    });
+    return set({ hostels: normalizedHostels, total, page, totalPages });
+  },
 
   setSelectedHostel: (hostel) => set({ selectedHostel: hostel }),
 

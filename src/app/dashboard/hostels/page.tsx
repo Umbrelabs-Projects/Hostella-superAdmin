@@ -37,16 +37,16 @@ export default function HostelsPage() {
     null
   );
 
-  const loadHostels = async () => {
-    try {
-      const data = await fetchHostels(page, 10, searchQuery);
-      setHostels(data.hostels, data.total, data.page, data.totalPages);
-    } catch (error) {
-      console.error("Failed to load hostels:", error);
-    }
-  };
-
   useEffect(() => {
+    const loadHostels = async () => {
+      try {
+        const data = await fetchHostels(page, 10, searchQuery);
+        setHostels(data.hostels, data.total, data.page, data.totalPages);
+      } catch (error) {
+        console.error("Failed to load hostels:", error);
+      }
+    };
+
     loadHostels();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, searchQuery]);
@@ -72,21 +72,35 @@ export default function HostelsPage() {
     setAssignAdminDialogOpen(true);
   };
 
-  const handleSuccess = () => {
-    loadHostels();
+  const handleSuccess = async () => {
+    // Reset to page 1 and reload data
+    setPage(1);
+    // Reload immediately with page 1
+    try {
+      const data = await fetchHostels(1, 10, searchQuery);
+      setHostels(data.hostels, data.total, 1, data.totalPages);
+    } catch (error) {
+      console.error("Failed to reload hostels:", error);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Hostel Management
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Manage hostels, assign admins, and track capacity
-          </p>
+    <div className="space-y-4">
+      {/* Search and Stats */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search hostels..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="text-lg font-semibold text-gray-900">
+            Total: <span className="text-blue-600">{hostels.length}</span>
+          </div>
         </div>
         <Button
           onClick={() => setCreateDialogOpen(true)}
@@ -95,22 +109,6 @@ export default function HostelsPage() {
           <Plus className="h-4 w-4 mr-2" />
           Create Hostel
         </Button>
-      </div>
-
-      {/* Search and Stats */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search hostels..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="text-sm text-gray-600">
-          Total Hostels: <span className="font-semibold">{total}</span>
-        </div>
       </div>
 
       {/* Hostel List */}

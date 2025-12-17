@@ -18,8 +18,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
   if (segments.length > 0) {
     const last = segments[segments.length - 1];
 
-    // Capitalize only
-    title = last.charAt(0).toUpperCase() + last.slice(1);
+    // Map common paths to better titles
+    const titleMap: Record<string, string> = {
+      home: "Dashboard Overview",
+      hostels: "Hostel Management",
+      broadcast: "Broadcast Messages",
+      settings: "Settings",
+      "super-admin": "Super Admin",
+    };
+
+    title = titleMap[last] || last.charAt(0).toUpperCase() + last.slice(1);
   }
 
   return (

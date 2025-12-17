@@ -11,13 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useHostelApi } from "../_hooks/useHostelApi";
 import { CreateHostelFormData } from "../_validations/hostelSchema";
@@ -29,12 +22,6 @@ interface CreateHostelDialogProps {
   onSuccess: () => void;
 }
 
-const campusOptions = [
-  "Main Campus",
-  "North Campus",
-  "South Campus",
-  "East Campus",
-];
 const facilityOptions = [
   "Wi-Fi",
   "Laundry",
@@ -173,23 +160,15 @@ export default function CreateHostelDialog({
               <Label htmlFor="campus">
                 Campus <span className="text-red-500">*</span>
               </Label>
-              <Select
+              <Input
+                id="campus"
                 value={formData.campus}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, campus: value })
+                onChange={(e) =>
+                  setFormData({ ...formData, campus: e.target.value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select campus" />
-                </SelectTrigger>
-                <SelectContent>
-                  {campusOptions.map((campus) => (
-                    <SelectItem key={campus} value={campus}>
-                      {campus}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Enter campus name"
+                required
+              />
             </div>
 
             {/* Phone */}

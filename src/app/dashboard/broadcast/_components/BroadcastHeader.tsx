@@ -7,7 +7,9 @@ interface BroadcastHeaderProps {
   onComposeClick: () => void;
 }
 
-export default function BroadcastHeader({ onComposeClick }: BroadcastHeaderProps) {
+export default function BroadcastHeader({
+  onComposeClick,
+}: BroadcastHeaderProps) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
@@ -16,8 +18,9 @@ export default function BroadcastHeader({ onComposeClick }: BroadcastHeaderProps
             <MessageCircleMoreIcon className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Broadcast Messages</h1>
-            <p className="mt-1 text-sm text-gray-600">Send messages to residents and members</p>
+            <p className="mt-1 text-sm text-gray-600">
+              Send messages to residents and members
+            </p>
           </div>
         </div>
       </div>

@@ -44,7 +44,7 @@ const baseAdminSchema = {
   }),
 
   // Empty string means no assignment
-  assignedHostelId: z.string().default(""),
+  assignedHostelId: z.string(),
 };
 
 export const adminFormSchema = z
@@ -67,6 +67,12 @@ export const adminFormSchema = z
       });
     }
   });
+
+// Transform to ensure assignedHostelId is always a string for form purposes
+export const adminFormSchemaForForm = adminFormSchema.transform((data) => ({
+  ...data,
+  assignedHostelId: data.assignedHostelId || "",
+}));
 
 export type AdminFormData = z.infer<typeof adminFormSchema>;
 

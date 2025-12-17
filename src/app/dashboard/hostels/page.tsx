@@ -58,6 +58,27 @@ export default function HostelsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchAdmins]);
 
+  // Revalidate hostels when tab becomes visible to catch external changes
+  useEffect(() => {
+    const refreshHostels = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const data = await fetchHostels(page, 10, searchQuery);
+        setHostels(data.hostels, data.total, data.page, data.totalPages);
+      } catch (error) {
+        console.error("Failed to refresh hostels on visibility:", error);
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void refreshHostels();
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchQuery, fetchHostels, setHostels]);
+
   // Initial and on-change fetch
   useEffect(() => {
     const loadHostels = async () => {

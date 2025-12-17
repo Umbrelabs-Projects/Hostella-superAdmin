@@ -58,13 +58,11 @@ export function useAdminApi() {
           method: "GET",
         });
 
-        // Handle both response formats
+        // Backend guarantees clean data per contract: role, status casing, and assignedHostelId handling
         if (Array.isArray(response)) {
-          // If response is just an array of admins
           setAdmins(response);
           setTotalAdmins(response.length);
         } else {
-          // If response is an object with admins property
           setAdmins(response.admins || []);
           setTotalAdmins(response.total || 0);
         }
@@ -179,11 +177,31 @@ export function useAdminApi() {
     [removeAdminFromStore, setError, setLoading, setSuccess]
   );
 
+  const fetchAvailableAdmins = useCallback(async (): Promise<Admin[]> => {
+    try {
+      const response = await apiFetch<Admin[]>("/admins/available", {
+        method: "GET",
+      });
+
+      // Backend returns only unassigned hostel-admins per contract
+      return response || [];
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch available admins";
+      console.error(message);
+      // Don't toast here as this is used in modals
+      return [];
+    }
+  }, []);
+
   return {
     fetchAdmins,
     fetchHostels,
     createAdmin,
     updateAdmin,
     deleteAdmin,
+    fetchAvailableAdmins,
   };
 }

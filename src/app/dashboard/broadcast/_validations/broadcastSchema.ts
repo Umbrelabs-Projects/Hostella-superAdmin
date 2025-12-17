@@ -47,6 +47,8 @@ export const broadcastMessageSchema = z
 export type BroadcastMessageFormData = z.infer<typeof broadcastMessageSchema>;
 
 // Schema for quick send (without scheduling)
-export const quickBroadcastSchema = broadcastMessageSchema.omit({ scheduledFor: true });
+export const quickBroadcastSchema = broadcastMessageSchema.omit({
+  scheduledFor: true,
+});
 
 export type QuickBroadcastFormData = z.infer<typeof quickBroadcastSchema>;

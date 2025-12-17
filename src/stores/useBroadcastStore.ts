@@ -94,14 +94,18 @@ export const useBroadcastStore = create<BroadcastState>((set, get) => ({
   updateMessage: (message) =>
     set((state) => ({
       messages: state.messages.map((m) => (m.id === message.id ? message : m)),
-      selectedMessage: state.selectedMessage?.id === message.id ? message : state.selectedMessage,
+      selectedMessage:
+        state.selectedMessage?.id === message.id
+          ? message
+          : state.selectedMessage,
     })),
 
   removeMessage: (id) =>
     set((state) => ({
       messages: state.messages.filter((m) => m.id !== id),
       totalMessages: state.totalMessages - 1,
-      selectedMessage: state.selectedMessage?.id === id ? null : state.selectedMessage,
+      selectedMessage:
+        state.selectedMessage?.id === id ? null : state.selectedMessage,
     })),
 
   // Composer actions
@@ -135,7 +139,8 @@ export const useBroadcastStore = create<BroadcastState>((set, get) => ({
 
   setStatusFilter: (status) => set({ statusFilter: status, currentPage: 1 }),
 
-  setPriorityFilter: (priority) => set({ priorityFilter: priority, currentPage: 1 }),
+  setPriorityFilter: (priority) =>
+    set({ priorityFilter: priority, currentPage: 1 }),
 
   // API state actions
   setLoading: (loading) => set({ loading }),

@@ -42,7 +42,7 @@ export async function apiFetch<T>(
 ): Promise<T> {
   // Default to relative paths (same origin) when no API URL is configured.
   // This lets the app call local API routes during development without extra env setup.
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const baseUrl = process.env.API_URL ?? "";
   // Add /api/v1 prefix to all endpoints
   const versionedEndpoint = endpoint.startsWith("/api/v1")
     ? endpoint

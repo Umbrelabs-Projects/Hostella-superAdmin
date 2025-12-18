@@ -122,8 +122,8 @@ describe("apiFetch utility", () => {
   });
 
   it("should use environment variable for base URL and add /api/v1 prefix", async () => {
-    const originalEnv = process.env.NEXT_PUBLIC_API_URL;
-    process.env.NEXT_PUBLIC_API_URL = "https://www.example.railway";
+    const originalEnv = process.env.API_URL;
+    process.env.API_URL = "https://www.example.railway";
 
     global.fetch = jest.fn(() =>
       Promise.resolve({
@@ -139,7 +139,7 @@ describe("apiFetch utility", () => {
     expect(url).toContain("https://www.example.railway");
     expect(url).toContain("/api/v1/test");
 
-    process.env.NEXT_PUBLIC_API_URL = originalEnv;
+    process.env.API_URL = originalEnv;
   });
 
   it("should append /api/v1 prefix and endpoint to base URL", async () => {

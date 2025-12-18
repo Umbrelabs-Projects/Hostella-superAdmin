@@ -2,6 +2,7 @@
 
 import { User } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,16 +20,35 @@ const dropdownItems = [
 ];
 
 export default function UserDropdown() {
+  const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleSignOut = (e: React.MouseEvent) => {
     e.preventDefault();
     signOut();
     router.push("/");
   };
+
+  if (!isHydrated) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-full cursor-pointer border border-gray-200 p-0 h-10 w-10 overflow-hidden"
+        aria-label="User menu"
+        disabled
+      >
+        <User className="h-5 w-5 text-gray-700" />
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

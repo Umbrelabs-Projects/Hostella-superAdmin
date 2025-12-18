@@ -9,6 +9,7 @@ import BroadcastHeader from "./_components/BroadcastHeader";
 import BroadcastFilters from "./_components/BroadcastFilters";
 import BroadcastList from "./_components/BroadcastList";
 import ComposeMessageDialog from "./_components/ComposeMessageDialog";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -31,6 +32,8 @@ export default function BroadcastPage() {
 
   const { fetchMessages, deleteMessage } = useBroadcastApi();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
 
   // Fetch messages on component mount and when filters change
   useEffect(() => {
@@ -54,12 +57,16 @@ export default function BroadcastPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // setCurrentPage is stable
 
-  const handleDeleteMessage = async (id: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this message?"
-    );
-    if (confirmed) {
-      await deleteMessage(id);
+  const handleDeleteMessage = (id: string) => {
+    setMessageToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (messageToDelete) {
+      await deleteMessage(messageToDelete);
+      setMessageToDelete(null);
+      setDeleteDialogOpen(false);
       // Refresh the list
       await fetchMessages(
         currentPage,
@@ -154,6 +161,17 @@ export default function BroadcastPage() {
       <ComposeMessageDialog
         isOpen={isComposeDialogOpen}
         onClose={closeComposeDialog}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Message"
+        description="Are you sure you want to delete this message? This action cannot be undone."
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

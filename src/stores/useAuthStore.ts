@@ -160,7 +160,7 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, error: null });
         try {
           await apiFetch("/user/password", {
-            method: "POST",
+            method: "PUT",
             body: JSON.stringify(payload),
           });
           set({ loading: false, error: null });

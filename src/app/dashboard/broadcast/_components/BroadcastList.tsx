@@ -170,19 +170,17 @@ export default function BroadcastList({
                         <RotateCcw className="h-4 w-4" />
                       </Button>
                     )}
-                  {(message.status === "draft" ||
-                    message.status === "scheduled") &&
-                    onDelete && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => onDelete(message.id)}
-                        title="Delete message"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                  {onDelete && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onDelete(message.id)}
+                      title="Delete message"
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

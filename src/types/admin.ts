@@ -3,6 +3,11 @@
 export type AdminRole = "super-admin" | "hostel-admin";
 export type AdminStatus = "active" | "inactive" | "suspended";
 
+export interface HostelImage {
+  id: string;
+  url: string;
+}
+
 export interface Hostel {
   id: string;
   name: string;
@@ -14,6 +19,8 @@ export interface Hostel {
   singleRooms: number;
   doubleRooms: number;
   facilities: string[]; // e.g., ["Wi-Fi", "Laundry", "Gym", "Study Room"]
+  description?: string; // Optional hostel description
+  images?: HostelImage[]; // Optional hostel images
   hasAdmin: boolean; // False by default when created, true when admin is assigned
   createdAt?: string;
   updatedAt?: string;

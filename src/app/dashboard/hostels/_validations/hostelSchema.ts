@@ -14,6 +14,7 @@ export const createHostelSchema = z
     singleRooms: z.number().min(0, "Cannot be negative").int(),
     doubleRooms: z.number().min(0, "Cannot be negative").int(),
     facilities: z.array(z.string()).min(1, "Select at least one facility"),
+    description: z.string().optional(), // Optional description field
   })
   .refine((data) => data.singleRooms + data.doubleRooms === data.totalRooms, {
     message: "Single rooms + Double rooms must equal Total rooms",
@@ -29,6 +30,7 @@ export const updateHostelSchema = z
     singleRooms: z.number().min(0, "Cannot be negative").int(),
     doubleRooms: z.number().min(0, "Cannot be negative").int(),
     facilities: z.array(z.string()).min(1, "Select at least one facility"),
+    description: z.string().optional(), // Optional description field
   })
   .refine((data) => data.singleRooms + data.doubleRooms === data.totalRooms, {
     message: "Single rooms + Double rooms must equal Total rooms",

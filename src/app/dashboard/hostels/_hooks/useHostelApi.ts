@@ -144,6 +144,68 @@ export function useHostelApi() {
     }
   };
 
+  const uploadHostelImage = async (
+    hostelId: string,
+    imageFile: File
+  ): Promise<{ hostel: Hostel; imageUrl: string }> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      // Get token from cookie (same way as apiFetch does)
+      const getAuthToken = (): string | null => {
+        if (typeof document === "undefined") return null;
+        const cookies = document.cookie.split("; ");
+        const tokenCookie = cookies.find((c) => c.startsWith("auth-token="));
+        if (tokenCookie) {
+          return tokenCookie.substring("auth-token=".length);
+        }
+        return null;
+      };
+
+      const baseUrl = process.env.API_URL ?? "";
+      const versionedEndpoint = `/api/v1/hostels/${hostelId}/upload-image`;
+      const token = getAuthToken();
+
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${baseUrl}${versionedEndpoint}`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `API error: ${res.status}`);
+      }
+
+      const json = await res.json();
+      // Handle response envelope
+      if (
+        json &&
+        typeof json === "object" &&
+        "success" in json &&
+        "data" in json
+      ) {
+        return json.data as { hostel: Hostel; imageUrl: string };
+      }
+      return json as { hostel: Hostel; imageUrl: string };
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to upload image";
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -153,5 +215,6 @@ export function useHostelApi() {
     deleteHostel,
     assignAdmin,
     unassignAdmin,
+    uploadHostelImage,
   };
 }

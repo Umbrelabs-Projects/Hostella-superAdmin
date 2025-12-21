@@ -11,8 +11,8 @@ describe("Hostel Validation Schemas", () => {
         name: "Test Hostel",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "+1234567890",
-        floors: 3,
+        phoneNumber: "+1234567890",
+        noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 60,
         doubleRooms: 40,
@@ -28,8 +28,8 @@ describe("Hostel Validation Schemas", () => {
         name: "Test Hostel",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "+1234567890",
-        floors: 3,
+        phoneNumber: "+1234567890",
+        noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 50,
         doubleRooms: 40, // 50 + 40 = 90, not 100
@@ -48,8 +48,8 @@ describe("Hostel Validation Schemas", () => {
         name: "H",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "+1234567890",
-        floors: 3,
+        phoneNumber: "+1234567890",
+        noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 60,
         doubleRooms: 40,
@@ -60,21 +60,21 @@ describe("Hostel Validation Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject hostel with no facilities", () => {
-      const invalidData = {
+    it("should accept hostel with no facilities (facilities are optional)", () => {
+      const validData = {
         name: "Test Hostel",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "+1234567890",
-        floors: 3,
+        phoneNumber: "+1234567890",
+        noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 60,
         doubleRooms: 40,
         facilities: [],
       };
 
-      const result = createHostelSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
+      const result = createHostelSchema.safeParse(validData);
+      expect(result.success).toBe(true);
     });
 
     it("should reject negative room counts", () => {
@@ -82,8 +82,8 @@ describe("Hostel Validation Schemas", () => {
         name: "Test Hostel",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "+1234567890",
-        floors: 3,
+        phoneNumber: "+1234567890",
+        noOfFloors: "3",
         totalRooms: 100,
         singleRooms: -10,
         doubleRooms: 40,
@@ -99,8 +99,8 @@ describe("Hostel Validation Schemas", () => {
         name: "Test Hostel",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "invalid",
-        floors: 3,
+        phoneNumber: "invalid",
+        noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 60,
         doubleRooms: 40,
@@ -125,8 +125,8 @@ describe("Hostel Validation Schemas", () => {
           name: "Test Hostel",
           location: "Campus Location",
           campus: "Main Campus",
-          phone,
-          floors: 3,
+          phoneNumber: phone,
+          noOfFloors: "3",
           totalRooms: 100,
           singleRooms: 60,
           doubleRooms: 40,
@@ -138,21 +138,21 @@ describe("Hostel Validation Schemas", () => {
       });
     });
 
-    it("should require at least 1 floor", () => {
-      const invalidData = {
+    it("should accept optional noOfFloors field", () => {
+      const validData = {
         name: "Test Hostel",
         location: "Campus Location",
         campus: "Main Campus",
-        phone: "+1234567890",
-        floors: 0,
+        phoneNumber: "+1234567890",
+        noOfFloors: null, // Optional field
         totalRooms: 100,
         singleRooms: 60,
         doubleRooms: 40,
         facilities: ["Wi-Fi"],
       };
 
-      const result = createHostelSchema.safeParse(invalidData);
-      expect(result.success).toBe(false);
+      const result = createHostelSchema.safeParse(validData);
+      expect(result.success).toBe(true);
     });
   });
 
@@ -162,6 +162,8 @@ describe("Hostel Validation Schemas", () => {
         name: "Updated Hostel",
         location: "New Location",
         campus: "South Campus",
+        phoneNumber: "+1234567890",
+        noOfFloors: "5",
         totalRooms: 50,
         singleRooms: 20,
         doubleRooms: 30,
@@ -177,6 +179,8 @@ describe("Hostel Validation Schemas", () => {
         name: "Updated Hostel",
         location: "New Location",
         campus: "South Campus",
+        phoneNumber: "+1234567890",
+        noOfFloors: "4",
         totalRooms: 100,
         singleRooms: 40,
         doubleRooms: 60,
@@ -185,6 +189,16 @@ describe("Hostel Validation Schemas", () => {
 
       const result = updateHostelSchema.safeParse(dataWithRooms);
       // Room fields are now editable in update schema
+      expect(result.success).toBe(true);
+    });
+
+    it("should allow partial updates with only some fields", () => {
+      const partialData = {
+        name: "Updated Hostel Name",
+        description: "New description",
+      };
+
+      const result = updateHostelSchema.safeParse(partialData);
       expect(result.success).toBe(true);
     });
   });

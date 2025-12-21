@@ -43,15 +43,15 @@ export default function CreateHostelDialog({
   const { createHostel, uploadHostelImage, loading } = useHostelApi();
   const [formData, setFormData] = useState<CreateHostelFormData>({
     name: "",
-    location: "",
-    campus: "",
-    phone: "",
-    floors: 1,
-    totalRooms: 0,
-    singleRooms: 0,
-    doubleRooms: 0,
+    location: null,
+    campus: null,
+    phoneNumber: null,
+    noOfFloors: null,
+    totalRooms: 0, // Initialize with 0 for required form fields
+    singleRooms: 0, // Initialize with 0 for required form fields
+    doubleRooms: 0, // Initialize with 0 for required form fields
     facilities: [],
-    description: "",
+    description: null,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -59,11 +59,15 @@ export default function CreateHostelDialog({
 
   // Real-time validation for room totals
   useEffect(() => {
-    const sum = formData.singleRooms + formData.doubleRooms;
-    if (formData.totalRooms > 0 && sum !== formData.totalRooms) {
+    const single = formData.singleRooms ?? 0;
+    const double = formData.doubleRooms ?? 0;
+    const total = formData.totalRooms ?? 0;
+    const sum = single + double;
+
+    if (total > 0 && sum !== total) {
       setErrors((prev) => ({
         ...prev,
-        totalRooms: `Single (${formData.singleRooms}) + Double (${formData.doubleRooms}) must equal Total (${formData.totalRooms})`,
+        totalRooms: `Single (${single}) + Double (${double}) must equal Total (${total})`,
       }));
     } else {
       setErrors((prev) => {
@@ -111,15 +115,15 @@ export default function CreateHostelDialog({
   const resetForm = () => {
     setFormData({
       name: "",
-      location: "",
-      campus: "",
-      phone: "",
-      floors: 1,
+      location: null,
+      campus: null,
+      phoneNumber: null,
+      noOfFloors: null,
       totalRooms: 0,
       singleRooms: 0,
       doubleRooms: 0,
       facilities: [],
-      description: "",
+      description: null,
     });
     setImageFile(null);
     setImagePreview(null);
@@ -166,12 +170,15 @@ export default function CreateHostelDialog({
   };
 
   const toggleFacility = (facility: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      facilities: prev.facilities.includes(facility)
-        ? prev.facilities.filter((f) => f !== facility)
-        : [...prev.facilities, facility],
-    }));
+    setFormData((prev) => {
+      const currentFacilities = prev.facilities || [];
+      return {
+        ...prev,
+        facilities: currentFacilities.includes(facility)
+          ? currentFacilities.filter((f) => f !== facility)
+          : [...currentFacilities, facility],
+      };
+    });
   };
 
   return (
@@ -201,69 +208,57 @@ export default function CreateHostelDialog({
 
             {/* Location */}
             <div>
-              <Label htmlFor="location">
-                Location <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
-                value={formData.location}
+                value={formData.location || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
                 placeholder="Enter location"
-                required
               />
             </div>
 
             {/* Campus */}
             <div>
-              <Label htmlFor="campus">
-                Campus <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="campus">Campus</Label>
               <Input
                 id="campus"
-                value={formData.campus}
+                value={formData.campus || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, campus: e.target.value })
                 }
                 placeholder="Enter campus name"
-                required
               />
             </div>
 
             {/* Phone */}
             <div>
-              <Label htmlFor="phone">
-                Phone <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="phoneNumber">Phone</Label>
               <Input
-                id="phone"
-                value={formData.phone}
+                id="phoneNumber"
+                value={formData.phoneNumber || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  setFormData({ ...formData, phoneNumber: e.target.value })
                 }
                 placeholder="+1234567890"
-                required
               />
             </div>
 
             {/* Floors */}
             <div>
-              <Label htmlFor="floors">
-                Floors <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="noOfFloors">Number of Floors</Label>
               <Input
-                id="floors"
-                type="number"
-                min="1"
-                value={formData.floors}
+                id="noOfFloors"
+                type="text"
+                value={formData.noOfFloors || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    floors: parseInt(e.target.value) || 1,
+                    noOfFloors: e.target.value,
                   })
                 }
-                required
+                placeholder="e.g. 4"
               />
             </div>
 
@@ -276,7 +271,7 @@ export default function CreateHostelDialog({
                 id="totalRooms"
                 type="number"
                 min="1"
-                value={formData.totalRooms}
+                value={formData.totalRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -300,7 +295,7 @@ export default function CreateHostelDialog({
                 id="singleRooms"
                 type="number"
                 min="0"
-                value={formData.singleRooms}
+                value={formData.singleRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -320,7 +315,7 @@ export default function CreateHostelDialog({
                 id="doubleRooms"
                 type="number"
                 min="0"
-                value={formData.doubleRooms}
+                value={formData.doubleRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -336,9 +331,12 @@ export default function CreateHostelDialog({
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={formData.description || ""}
+                value={formData.description ?? ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  setFormData({
+                    ...formData,
+                    description: e.target.value || null,
+                  })
                 }
                 placeholder="Enter hostel description..."
                 rows={4}
@@ -349,14 +347,12 @@ export default function CreateHostelDialog({
 
           {/* Facilities */}
           <div>
-            <Label>
-              Facilities <span className="text-red-500">*</span>
-            </Label>
+            <Label>Facilities</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
               {facilityOptions.map((facility) => (
                 <div key={facility} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={formData.facilities.includes(facility)}
+                    checked={(formData.facilities || []).includes(facility)}
                     onCheckedChange={() => toggleFacility(facility)}
                   />
                   <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
@@ -365,11 +361,6 @@ export default function CreateHostelDialog({
                 </div>
               ))}
             </div>
-            {formData.facilities.length === 0 && (
-              <p className="text-red-500 text-sm mt-1">
-                Select at least one facility
-              </p>
-            )}
           </div>
 
           {/* Image Upload */}

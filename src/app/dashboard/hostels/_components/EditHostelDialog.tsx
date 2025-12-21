@@ -46,13 +46,15 @@ export default function EditHostelDialog({
   const { updateHostel, uploadHostelImage, loading } = useHostelApi();
   const [formData, setFormData] = useState<UpdateHostelFormData>({
     name: "",
-    location: "",
-    campus: "",
+    location: null,
+    campus: null,
+    phoneNumber: null,
+    noOfFloors: null,
     totalRooms: 0,
     singleRooms: 0,
     doubleRooms: 0,
-    facilities: [],
-    description: "",
+    facilities: undefined,
+    description: null,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -62,13 +64,16 @@ export default function EditHostelDialog({
     if (hostel) {
       setFormData({
         name: hostel.name,
-        location: hostel.location,
-        campus: hostel.campus,
+        location: hostel.location ?? null,
+        campus: hostel.campus ?? null,
+        phoneNumber: hostel.phoneNumber ?? hostel.phone ?? null,
+        noOfFloors:
+          hostel.noOfFloors ?? (hostel.floors ? String(hostel.floors) : null),
         totalRooms: hostel.totalRooms,
         singleRooms: hostel.singleRooms,
         doubleRooms: hostel.doubleRooms,
         facilities: hostel.facilities,
-        description: hostel.description || "",
+        description: hostel.description ?? null,
       });
       // Set image preview if hostel has images
       if (hostel.images && hostel.images.length > 0) {
@@ -82,11 +87,15 @@ export default function EditHostelDialog({
 
   // Real-time validation for room totals
   useEffect(() => {
-    const sum = formData.singleRooms + formData.doubleRooms;
-    if (formData.totalRooms > 0 && sum !== formData.totalRooms) {
+    const single = formData.singleRooms || 0;
+    const double = formData.doubleRooms || 0;
+    const total = formData.totalRooms;
+    const sum = single + double;
+
+    if (total !== undefined && total > 0 && sum !== total) {
       setErrors((prev) => ({
         ...prev,
-        totalRooms: `Single (${formData.singleRooms}) + Double (${formData.doubleRooms}) must equal Total (${formData.totalRooms})`,
+        totalRooms: `Single (${single}) + Double (${double}) must equal Total (${total})`,
       }));
     } else {
       setErrors((prev) => {
@@ -132,12 +141,15 @@ export default function EditHostelDialog({
   };
 
   const toggleFacility = (facility: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      facilities: prev.facilities.includes(facility)
-        ? prev.facilities.filter((f) => f !== facility)
-        : [...prev.facilities, facility],
-    }));
+    setFormData((prev) => {
+      const currentFacilities = prev.facilities || [];
+      return {
+        ...prev,
+        facilities: currentFacilities.includes(facility)
+          ? currentFacilities.filter((f) => f !== facility)
+          : [...currentFacilities, facility],
+      };
+    });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,33 +225,57 @@ export default function EditHostelDialog({
 
             {/* Location */}
             <div>
-              <Label htmlFor="location">
-                Location <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
-                value={formData.location}
+                value={formData.location || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
                 placeholder="Enter location"
-                required
               />
             </div>
 
             {/* Campus */}
             <div>
-              <Label htmlFor="campus">
-                Campus <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="campus">Campus</Label>
               <Input
                 id="campus"
-                value={formData.campus}
+                value={formData.campus || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, campus: e.target.value })
                 }
                 placeholder="Enter campus name"
-                required
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <Label htmlFor="phoneNumber">Phone</Label>
+              <Input
+                id="phoneNumber"
+                value={formData.phoneNumber || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, phoneNumber: e.target.value })
+                }
+                placeholder="+1234567890"
+              />
+            </div>
+
+            {/* Floors */}
+            <div>
+              <Label htmlFor="noOfFloors">Number of Floors</Label>
+              <Input
+                id="noOfFloors"
+                type="text"
+                value={formData.noOfFloors || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    noOfFloors: e.target.value,
+                  })
+                }
+                placeholder="e.g. 4"
               />
             </div>
 
@@ -252,7 +288,7 @@ export default function EditHostelDialog({
                 id="totalRooms"
                 type="number"
                 min="1"
-                value={formData.totalRooms}
+                value={formData.totalRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -296,7 +332,7 @@ export default function EditHostelDialog({
                 id="doubleRooms"
                 type="number"
                 min="0"
-                value={formData.doubleRooms}
+                value={formData.doubleRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -312,9 +348,12 @@ export default function EditHostelDialog({
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={formData.description || ""}
+                value={formData.description ?? ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  setFormData({
+                    ...formData,
+                    description: e.target.value || null,
+                  })
                 }
                 placeholder="Enter hostel description..."
                 rows={4}
@@ -325,14 +364,12 @@ export default function EditHostelDialog({
 
           {/* Facilities */}
           <div>
-            <Label>
-              Facilities <span className="text-red-500">*</span>
-            </Label>
+            <Label>Facilities</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
               {facilityOptions.map((facility) => (
                 <div key={facility} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={formData.facilities.includes(facility)}
+                    checked={(formData.facilities || []).includes(facility)}
                     onCheckedChange={() => toggleFacility(facility)}
                   />
                   <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">

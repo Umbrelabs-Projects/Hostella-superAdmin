@@ -8,8 +8,8 @@ describe("useHostelStore", () => {
     name: "Test Hostel",
     location: "Campus Location",
     campus: "Main Campus",
-    phone: "+1234567890",
-    floors: 3,
+    phoneNumber: "+1234567890",
+    noOfFloors: "3",
     totalRooms: 100,
     singleRooms: 60,
     doubleRooms: 40,
@@ -192,8 +192,9 @@ describe("useHostelStore", () => {
       result.current.addHostel(hostelWithInconsistentRooms);
     });
 
-    expect(result.current.hostels[0].singleRooms + result.current.hostels[0].doubleRooms).not.toBe(
-      result.current.hostels[0].totalRooms
-    );
+    expect(
+      result.current.hostels[0].singleRooms +
+        result.current.hostels[0].doubleRooms
+    ).not.toBe(result.current.hostels[0].totalRooms);
   });
 });

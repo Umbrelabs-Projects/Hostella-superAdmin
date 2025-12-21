@@ -11,19 +11,22 @@ export interface HostelImage {
 export interface Hostel {
   id: string;
   name: string;
-  location: string;
-  campus: string;
-  phone: string;
-  floors: number;
+  location: string | null;
+  campus: string | null;
+  phoneNumber: string | null; // API field name
+  noOfFloors: string | null; // API field name (stored as string)
   totalRooms: number;
   singleRooms: number;
   doubleRooms: number;
   facilities: string[]; // e.g., ["Wi-Fi", "Laundry", "Gym", "Study Room"]
-  description?: string; // Optional hostel description
+  description?: string | null; // Optional hostel description
   images?: HostelImage[]; // Optional hostel images
   hasAdmin: boolean; // False by default when created, true when admin is assigned
   createdAt?: string;
   updatedAt?: string;
+  // Legacy fields for backward compatibility (if backend still returns them)
+  phone?: string;
+  floors?: number;
 }
 
 export interface Admin {

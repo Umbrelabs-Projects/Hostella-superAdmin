@@ -13,17 +13,32 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const { token, initializing } = useAuthStore();
+  const { token, initializing, user } = useAuthStore();
 
-  // Protect dashboard route - redirect to home if not authenticated
+  // Protect dashboard route - redirect to home if not authenticated or not SUPER_ADMIN
   useEffect(() => {
-    if (!initializing && !token) {
-      router.push("/");
+    if (!initializing) {
+      if (!token) {
+        router.push("/");
+        return;
+      }
+      // Check if user has SUPER_ADMIN role
+      if (user && user.role !== "SUPER_ADMIN") {
+        // Clear invalid session and redirect
+        useAuthStore.getState().signOut();
+        router.push("/");
+        return;
+      }
     }
-  }, [token, initializing, router]);
+  }, [token, initializing, user, router]);
 
   // Don't render dashboard if no token and initialization is complete
   if (!initializing && !token) {
+    return null;
+  }
+
+  // Don't render dashboard if user is not SUPER_ADMIN
+  if (!initializing && user && user.role !== "SUPER_ADMIN") {
     return null;
   }
 

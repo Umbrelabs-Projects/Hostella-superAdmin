@@ -69,7 +69,7 @@ export interface DashboardAnalytics {
   revenueByHostel: RevenueByHostel[];
   monthlyRevenue: MonthlyRevenue[];
   paymentStatus: PaymentStatus;
-  recentBookings?: number;
-  revenueTrend?: RevenueTrend;
+  recentBookings: number;
+  revenueTrend: RevenueTrend;
   lastUpdated: string;
 }

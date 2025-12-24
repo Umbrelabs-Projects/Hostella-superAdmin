@@ -78,7 +78,21 @@ export async function apiFetch<T>(
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `API error: ${res.status}`);
+    // Try to parse JSON error response
+    try {
+      const errorJson = JSON.parse(text);
+      // Handle standard error format: { success: false, message: "...", statusCode: ... }
+      if (errorJson && typeof errorJson === "object" && "message" in errorJson) {
+        throw new Error(errorJson.message || text);
+      }
+      throw new Error(text || `API error: ${res.status}`);
+    } catch (parseError) {
+      // If parsing fails or it's not JSON, use the text as error message
+      if (parseError instanceof Error && parseError.message !== text) {
+        throw parseError;
+      }
+      throw new Error(text || `API error: ${res.status}`);
+    }
   }
 
   try {

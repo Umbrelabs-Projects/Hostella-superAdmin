@@ -58,6 +58,14 @@ export const useAuthStore = create<AuthState>()(
             }
           );
 
+          // Check if user has SUPER_ADMIN role
+          if (res.user.role !== "SUPER_ADMIN") {
+            const errorMessage = "Access denied. Only SUPER_ADMIN users can access this application.";
+            set({ error: errorMessage, loading: false });
+            setAuthToken(null); // Clear any token that might have been set
+            throw new Error(errorMessage);
+          }
+
           setAuthToken(res.token);
           set({ user: res.user, token: res.token, loading: false });
         } catch (err: unknown) {
@@ -87,6 +95,16 @@ export const useAuthStore = create<AuthState>()(
             if (token) {
               setAuthToken(token);
               const user = await apiFetch<User>("/auth/me");
+              
+              // Check if user has SUPER_ADMIN role
+              if (user.role !== "SUPER_ADMIN") {
+                // Clear invalid session
+                setAuthToken(null);
+                set({ user: null, token: null, initializing: false });
+                localStorage.removeItem("auth-storage");
+                return;
+              }
+              
               set({ user, token, initializing: false });
               return;
             }

@@ -39,7 +39,18 @@ export default function LoginForm() {
         router.push(ROUTES.dashboard);
       }, 100);
     } catch (error) {
-      toast.error("Login failed. Please check your credentials.");
+      // Show specific error message if available, otherwise generic message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Login failed. Please check your credentials.";
+      
+      // Check if it's a role-based access denial
+      if (errorMessage.includes("Access denied") || errorMessage.includes("SUPER_ADMIN")) {
+        toast.error("Access denied. Only SUPER_ADMIN users can access this application.");
+      } else {
+        toast.error("Login failed. Please check your credentials.");
+      }
+      
       setIsLoading(false);
     }
   };

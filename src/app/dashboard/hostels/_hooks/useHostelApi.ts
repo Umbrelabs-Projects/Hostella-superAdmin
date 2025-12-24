@@ -49,9 +49,30 @@ export function useHostelApi() {
     setLoading(true);
     setError(null);
     try {
+      // Map form data to API format (field names already match API expectations)
+      const apiData: Record<string, unknown> = {
+        name: data.name,
+        location: data.location ?? null,
+        campus: data.campus ?? null,
+        phoneNumber: data.phoneNumber ?? null,
+        noOfFloors: data.noOfFloors ?? null,
+        facilities: data.facilities ?? [],
+        description: data.description ?? null,
+      };
+
+      // Include room fields if provided (totalRooms must be > 0, singleRooms/doubleRooms can be 0)
+      if (data.totalRooms !== undefined && data.totalRooms > 0) {
+        apiData.totalRooms = data.totalRooms;
+        // If totalRooms is provided, also include singleRooms and doubleRooms
+        if (data.singleRooms !== undefined)
+          apiData.singleRooms = data.singleRooms;
+        if (data.doubleRooms !== undefined)
+          apiData.doubleRooms = data.doubleRooms;
+      }
+
       const hostel = await apiFetch<Hostel>("/hostels", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify(apiData),
       });
       return hostel;
     } catch (err) {
@@ -71,9 +92,30 @@ export function useHostelApi() {
     setLoading(true);
     setError(null);
     try {
+      // Map form data to API format, only include defined fields
+      const apiData: Record<string, unknown> = {};
+      if (data.name !== undefined) apiData.name = data.name;
+      if (data.location !== undefined) apiData.location = data.location ?? null;
+      if (data.campus !== undefined) apiData.campus = data.campus ?? null;
+      if (data.phoneNumber !== undefined)
+        apiData.phoneNumber = data.phoneNumber ?? null;
+      if (data.noOfFloors !== undefined)
+        apiData.noOfFloors = data.noOfFloors ?? null;
+      // Include room fields if provided (totalRooms must be > 0)
+      if (data.totalRooms !== undefined && data.totalRooms > 0) {
+        apiData.totalRooms = data.totalRooms;
+        if (data.singleRooms !== undefined)
+          apiData.singleRooms = data.singleRooms;
+        if (data.doubleRooms !== undefined)
+          apiData.doubleRooms = data.doubleRooms;
+      }
+      if (data.facilities !== undefined) apiData.facilities = data.facilities;
+      if (data.description !== undefined)
+        apiData.description = data.description ?? null;
+
       const hostel = await apiFetch<Hostel>(`/hostels/${id}`, {
         method: "PATCH",
-        body: JSON.stringify(data),
+        body: JSON.stringify(apiData),
       });
       return hostel;
     } catch (err) {
@@ -144,6 +186,68 @@ export function useHostelApi() {
     }
   };
 
+  const uploadHostelImage = async (
+    hostelId: string,
+    imageFile: File
+  ): Promise<{ hostel: Hostel; imageUrl: string }> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      // Get token from cookie (same way as apiFetch does)
+      const getAuthToken = (): string | null => {
+        if (typeof document === "undefined") return null;
+        const cookies = document.cookie.split("; ");
+        const tokenCookie = cookies.find((c) => c.startsWith("auth-token="));
+        if (tokenCookie) {
+          return tokenCookie.substring("auth-token=".length);
+        }
+        return null;
+      };
+
+      const baseUrl = process.env.API_URL ?? "";
+      const versionedEndpoint = `/api/v1/hostels/${hostelId}/upload-image`;
+      const token = getAuthToken();
+
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${baseUrl}${versionedEndpoint}`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `API error: ${res.status}`);
+      }
+
+      const json = await res.json();
+      // Handle response envelope
+      if (
+        json &&
+        typeof json === "object" &&
+        "success" in json &&
+        "data" in json
+      ) {
+        return json.data as { hostel: Hostel; imageUrl: string };
+      }
+      return json as { hostel: Hostel; imageUrl: string };
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to upload image";
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -153,5 +257,6 @@ export function useHostelApi() {
     deleteHostel,
     assignAdmin,
     unassignAdmin,
+    uploadHostelImage,
   };
 }

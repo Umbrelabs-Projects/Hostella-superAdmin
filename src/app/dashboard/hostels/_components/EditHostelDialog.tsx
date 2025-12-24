@@ -12,10 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { useHostelApi } from "../_hooks/useHostelApi";
 import { UpdateHostelFormData } from "../_validations/hostelSchema";
 import { Hostel } from "@/types/admin";
 import { toast } from "sonner";
+import { Upload, X } from "lucide-react";
 
 interface EditHostelDialogProps {
   open: boolean;
@@ -41,39 +43,59 @@ export default function EditHostelDialog({
   onClose,
   onSuccess,
 }: EditHostelDialogProps) {
-  const { updateHostel, loading } = useHostelApi();
+  const { updateHostel, uploadHostelImage, loading } = useHostelApi();
   const [formData, setFormData] = useState<UpdateHostelFormData>({
     name: "",
-    location: "",
-    campus: "",
+    location: null,
+    campus: null,
+    phoneNumber: null,
+    noOfFloors: null,
     totalRooms: 0,
     singleRooms: 0,
     doubleRooms: 0,
-    facilities: [],
+    facilities: undefined,
+    description: null,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (hostel) {
       setFormData({
         name: hostel.name,
-        location: hostel.location,
-        campus: hostel.campus,
+        location: hostel.location ?? null,
+        campus: hostel.campus ?? null,
+        phoneNumber: hostel.phoneNumber ?? hostel.phone ?? null,
+        noOfFloors:
+          hostel.noOfFloors ?? (hostel.floors ? String(hostel.floors) : null),
         totalRooms: hostel.totalRooms,
         singleRooms: hostel.singleRooms,
         doubleRooms: hostel.doubleRooms,
         facilities: hostel.facilities,
+        description: hostel.description ?? null,
       });
+      // Set image preview if hostel has images
+      if (hostel.images && hostel.images.length > 0) {
+        setImagePreview(hostel.images[0].url);
+      } else {
+        setImagePreview(null);
+      }
+      setImageFile(null); // Reset file selection when dialog opens
     }
   }, [hostel]);
 
   // Real-time validation for room totals
   useEffect(() => {
-    const sum = formData.singleRooms + formData.doubleRooms;
-    if (formData.totalRooms > 0 && sum !== formData.totalRooms) {
+    const single = formData.singleRooms || 0;
+    const double = formData.doubleRooms || 0;
+    const total = formData.totalRooms;
+    const sum = single + double;
+
+    if (total !== undefined && total > 0 && sum !== total) {
       setErrors((prev) => ({
         ...prev,
-        totalRooms: `Single (${formData.singleRooms}) + Double (${formData.doubleRooms}) must equal Total (${formData.totalRooms})`,
+        totalRooms: `Single (${single}) + Double (${double}) must equal Total (${total})`,
       }));
     } else {
       setErrors((prev) => {
@@ -93,7 +115,21 @@ export default function EditHostelDialog({
         toast.error("Please fix validation errors");
         return;
       }
+
+      // Update hostel first
       await updateHostel(hostel.id, formData);
+
+      // Upload image if a new one was selected
+      if (imageFile) {
+        try {
+          await uploadHostelImage(hostel.id, imageFile);
+        } catch (imageErr) {
+          // Log error but don't fail the entire operation
+          console.error("Failed to upload image:", imageErr);
+          toast.warning("Hostel updated but image upload failed");
+        }
+      }
+
       toast.success("Hostel updated successfully");
       onSuccess();
       onClose();
@@ -105,12 +141,59 @@ export default function EditHostelDialog({
   };
 
   const toggleFacility = (facility: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      facilities: prev.facilities.includes(facility)
-        ? prev.facilities.filter((f) => f !== facility)
-        : [...prev.facilities, facility],
-    }));
+    setFormData((prev) => {
+      const currentFacilities = prev.facilities || [];
+      return {
+        ...prev,
+        facilities: currentFacilities.includes(facility)
+          ? currentFacilities.filter((f) => f !== facility)
+          : [...currentFacilities, facility],
+      };
+    });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!validTypes.includes(file.type)) {
+        toast.error(
+          "Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed."
+        );
+        return;
+      }
+
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error("File size exceeds 5MB limit.");
+        return;
+      }
+
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    // If there was an existing image, keep the preview, otherwise clear it
+    if (hostel?.images && hostel.images.length > 0 && !imageFile) {
+      setImagePreview(hostel.images[0].url);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   if (!hostel) return null;
@@ -142,33 +225,57 @@ export default function EditHostelDialog({
 
             {/* Location */}
             <div>
-              <Label htmlFor="location">
-                Location <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
-                value={formData.location}
+                value={formData.location || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
                 }
                 placeholder="Enter location"
-                required
               />
             </div>
 
             {/* Campus */}
             <div>
-              <Label htmlFor="campus">
-                Campus <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="campus">Campus</Label>
               <Input
                 id="campus"
-                value={formData.campus}
+                value={formData.campus || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, campus: e.target.value })
                 }
                 placeholder="Enter campus name"
-                required
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <Label htmlFor="phoneNumber">Phone</Label>
+              <Input
+                id="phoneNumber"
+                value={formData.phoneNumber || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, phoneNumber: e.target.value })
+                }
+                placeholder="+1234567890"
+              />
+            </div>
+
+            {/* Floors */}
+            <div>
+              <Label htmlFor="noOfFloors">Number of Floors</Label>
+              <Input
+                id="noOfFloors"
+                type="text"
+                value={formData.noOfFloors || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    noOfFloors: e.target.value,
+                  })
+                }
+                placeholder="e.g. 4"
               />
             </div>
 
@@ -181,7 +288,7 @@ export default function EditHostelDialog({
                 id="totalRooms"
                 type="number"
                 min="1"
-                value={formData.totalRooms}
+                value={formData.totalRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -225,7 +332,7 @@ export default function EditHostelDialog({
                 id="doubleRooms"
                 type="number"
                 min="0"
-                value={formData.doubleRooms}
+                value={formData.doubleRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -235,18 +342,34 @@ export default function EditHostelDialog({
                 required
               />
             </div>
+
+            {/* Description */}
+            <div className="col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description ?? ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value || null,
+                  })
+                }
+                placeholder="Enter hostel description..."
+                rows={4}
+                className="resize-none"
+              />
+            </div>
           </div>
 
           {/* Facilities */}
           <div>
-            <Label>
-              Facilities <span className="text-red-500">*</span>
-            </Label>
+            <Label>Facilities</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
               {facilityOptions.map((facility) => (
                 <div key={facility} className="flex items-center space-x-2">
                   <Checkbox
-                    checked={formData.facilities.includes(facility)}
+                    checked={(formData.facilities || []).includes(facility)}
                     onCheckedChange={() => toggleFacility(facility)}
                   />
                   <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
@@ -254,6 +377,52 @@ export default function EditHostelDialog({
                   </label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <Label htmlFor="image">Hostel Image</Label>
+            <div className="mt-2">
+              {imagePreview ? (
+                <div className="relative inline-block">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="h-32 w-32 object-cover rounded-lg border border-gray-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <label
+                  htmlFor="image-upload-edit"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG, GIF, WEBP (MAX. 5MB)
+                    </p>
+                  </div>
+                  <input
+                    id="image-upload-edit"
+                    type="file"
+                    className="hidden"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    onChange={handleImageChange}
+                  />
+                </label>
+              )}
             </div>
           </div>
 

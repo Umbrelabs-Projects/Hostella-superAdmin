@@ -21,17 +21,32 @@ import {
   Users,
   RefreshCw,
   AlertCircle,
+  Calendar,
+  TrendingDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
-  const { analytics, loading, error } = useAnalyticsStore();
+  const { analytics, loading, error, dateRange } = useAnalyticsStore();
   const { fetchAnalytics } = useAnalyticsApi();
 
   useEffect(() => {
     void fetchAnalytics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // fetchAnalytics is stable - run only once on mount
+
+  // Auto-refresh when page becomes visible (to catch new bookings)
+  useEffect(() => {
+    const refreshOnVisibility = async () => {
+      if (document.visibilityState === "visible") {
+        await fetchAnalytics();
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshOnVisibility);
+    return () => document.removeEventListener("visibilitychange", refreshOnVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRefresh = () => {
     void fetchAnalytics();
@@ -45,17 +60,25 @@ export default function HomePage() {
     monthlyRevenue,
     revenueByHostel,
     paymentStatus,
+    recentBookings,
+    revenueTrend,
   } = analytics || {};
 
   return (
     <div className="p-3 md:px-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-1">
           {analytics && (
-            <p className="text-sm text-gray-600">
-              Last updated: {new Date(analytics.lastUpdated).toLocaleString()}
-            </p>
+            <>
+              <p className="text-sm text-gray-600">
+                Last updated: {new Date(analytics.lastUpdated).toLocaleString()}
+              </p>
+              <p className="text-xs text-gray-500">
+                Date range: {dateRange.startDate} - {dateRange.endDate}
+                <span className="ml-2 text-gray-400">(includes full day boundaries)</span>
+              </p>
+            </>
           )}
         </div>
         <Button
@@ -140,9 +163,11 @@ export default function HomePage() {
       </div>
 
       {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {showLoading ? (
           <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -172,6 +197,34 @@ export default function HomePage() {
               iconColor="text-emerald-600"
               iconBgColor="bg-emerald-100"
             />
+            <StatsCard
+              title="Recent Bookings"
+              value={recentBookings ?? 0}
+              icon={Calendar}
+              iconColor="text-cyan-600"
+              iconBgColor="bg-cyan-100"
+            />
+            {revenueTrend && (
+              <StatsCard
+                title="Revenue Trend"
+                value={`${revenueTrend.percentageChange >= 0 ? "+" : ""}${revenueTrend.percentageChange.toFixed(1)}%`}
+                icon={revenueTrend.percentageChange >= 0 ? TrendingUp : TrendingDown}
+                iconColor={
+                  revenueTrend.percentageChange >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }
+                iconBgColor={
+                  revenueTrend.percentageChange >= 0
+                    ? "bg-green-100"
+                    : "bg-red-100"
+                }
+                trend={{
+                  value: Math.abs(revenueTrend.percentageChange),
+                  isPositive: revenueTrend.percentageChange >= 0,
+                }}
+              />
+            )}
           </>
         )}
       </div>

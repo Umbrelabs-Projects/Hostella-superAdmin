@@ -34,9 +34,12 @@ export const useHostelStore = create<HostelState>((set) => ({
   searchQuery: "",
 
   setHostels: (hostels, total, page, totalPages, admins?: Admin[]) => {
+    // Ensure hostels is always an array to prevent map errors
+    const hostelsArray = Array.isArray(hostels) ? hostels : [];
+    
     // Normalize hasAdmin based on whether an admin is actually assigned
     // This prevents inconsistencies where hasAdmin is true but no admin exists
-    const normalizedHostels = hostels.map((hostel) => {
+    const normalizedHostels = hostelsArray.map((hostel) => {
       // If admins list is provided, check if any admin is assigned to this hostel
       if (admins && Array.isArray(admins)) {
         const hasAssignedAdmin = admins.some(

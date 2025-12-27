@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { Hostel } from "@/types/admin";
 import {
@@ -18,32 +18,58 @@ export function useHostelApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHostels = async (
-    page = 1,
-    limit = 10,
-    search = ""
-  ): Promise<PaginatedHostelResponse> => {
+  const fetchHostels = useCallback(
+    async (
+      page = 1,
+      limit = 10,
+      search = ""
+    ): Promise<PaginatedHostelResponse> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+          ...(search && { search }),
+        });
+        const data = await apiFetch<PaginatedHostelResponse>(
+          `/hostels?${params.toString()}`
+        );
+        return data;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch hostels";
+        setError(message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const fetchHostelById = useCallback(async (id: string): Promise<Hostel> => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(search && { search }),
-      });
-      const data = await apiFetch<PaginatedHostelResponse>(
-        `/hostels?${params.toString()}`
-      );
-      return data;
+      // The API returns { success: true, data: { hostel: ... } }
+      // apiFetch assumes the response is the data key if it exists, or the whole response
+      // We might need to adjust based on how apiFetch is implemented, but typically:
+      // If apiFetch returns T, we expect T to match the response structure.
+      // Based on fetchHostels, it returns PaginatedHostelResponse directly.
+      // Based on the user guide: GET /api/v1/hostels/{id} returns { success: true, data: { hostel: ... } }
+
+      const response = await apiFetch<{ hostel: Hostel }>(`/hostels/${id}`);
+      return response.hostel;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to fetch hostels";
+        err instanceof Error ? err.message : "Failed to fetch hostel details";
       setError(message);
       throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const createHostel = async (data: CreateHostelFormData): Promise<Hostel> => {
     setLoading(true);
@@ -252,6 +278,7 @@ export function useHostelApi() {
     loading,
     error,
     fetchHostels,
+    fetchHostelById,
     createHostel,
     updateHostel,
     deleteHostel,

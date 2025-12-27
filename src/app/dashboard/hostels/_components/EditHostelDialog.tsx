@@ -43,7 +43,8 @@ export default function EditHostelDialog({
   onClose,
   onSuccess,
 }: EditHostelDialogProps) {
-  const { updateHostel, uploadHostelImage, loading } = useHostelApi();
+  const { updateHostel, uploadHostelImage, fetchHostelById, loading } =
+    useHostelApi();
   const [formData, setFormData] = useState<UpdateHostelFormData>({
     name: "",
     location: null,
@@ -59,31 +60,70 @@ export default function EditHostelDialog({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fetchingDetails, setFetchingDetails] = useState(false);
 
   useEffect(() => {
-    if (hostel) {
-      setFormData({
-        name: hostel.name,
-        location: hostel.location ?? null,
-        campus: hostel.campus ?? null,
-        phoneNumber: hostel.phoneNumber ?? hostel.phone ?? null,
-        noOfFloors:
-          hostel.noOfFloors ?? (hostel.floors ? String(hostel.floors) : null),
-        totalRooms: hostel.totalRooms,
-        singleRooms: hostel.singleRooms,
-        doubleRooms: hostel.doubleRooms,
-        facilities: hostel.facilities,
-        description: hostel.description ?? null,
-      });
-      // Set image preview if hostel has images
-      if (hostel.images && hostel.images.length > 0) {
-        setImagePreview(hostel.images[0].url);
-      } else {
-        setImagePreview(null);
+    const loadHostelDetails = async () => {
+      if (hostel && open) {
+        setFetchingDetails(true);
+        try {
+          // Initial population from props (fast)
+          setFormData({
+            name: hostel.name,
+            location: hostel.location ?? null,
+            campus: hostel.campus ?? null,
+            phoneNumber: hostel.phoneNumber ?? hostel.phone ?? null,
+            noOfFloors:
+              hostel.noOfFloors ??
+              (hostel.floors ? String(hostel.floors) : null),
+            totalRooms: hostel.totalRooms,
+            singleRooms: hostel.singleRooms,
+            doubleRooms: hostel.doubleRooms,
+            facilities: hostel.facilities,
+            description: hostel.description ?? null,
+          });
+
+          // Fetch full details to ensure we have everything
+          const fullHostel = await fetchHostelById(hostel.id);
+
+          setFormData({
+            name: fullHostel.name,
+            location: fullHostel.location ?? null,
+            campus: fullHostel.campus ?? null,
+            phoneNumber: fullHostel.phoneNumber ?? fullHostel.phone ?? null,
+            noOfFloors:
+              fullHostel.noOfFloors ??
+              (fullHostel.floors ? String(fullHostel.floors) : null),
+            totalRooms: fullHostel.totalRooms,
+            singleRooms: fullHostel.singleRooms,
+            doubleRooms: fullHostel.doubleRooms,
+            facilities: fullHostel.facilities,
+            description: fullHostel.description ?? null,
+          });
+
+          // Set image preview if hostel has images
+          if (fullHostel.images && fullHostel.images.length > 0) {
+            setImagePreview(fullHostel.images[0].url);
+          } else {
+            // Fallback to prop images
+            if (hostel.images && hostel.images.length > 0) {
+              setImagePreview(hostel.images[0].url);
+            } else {
+              setImagePreview(null);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch hostel details:", error);
+          // Fallback is already set from props
+        } finally {
+          setFetchingDetails(false);
+          setImageFile(null); // Reset file selection when dialog opens
+        }
       }
-      setImageFile(null); // Reset file selection when dialog opens
-    }
-  }, [hostel]);
+    };
+
+    loadHostelDetails();
+  }, [hostel, open, fetchHostelById]);
 
   // Real-time validation for room totals
   useEffect(() => {
@@ -214,7 +254,7 @@ export default function EditHostelDialog({
               </Label>
               <Input
                 id="name"
-                value={formData.name}
+                value={formData.name || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
@@ -312,7 +352,7 @@ export default function EditHostelDialog({
                 id="singleRooms"
                 type="number"
                 min="0"
-                value={formData.singleRooms}
+                value={formData.singleRooms ?? 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,

@@ -44,7 +44,8 @@ export default function HomePage() {
     };
 
     document.addEventListener("visibilitychange", refreshOnVisibility);
-    return () => document.removeEventListener("visibilitychange", refreshOnVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", refreshOnVisibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -76,7 +77,9 @@ export default function HomePage() {
               </p>
               <p className="text-xs text-gray-500">
                 Date range: {dateRange.startDate} - {dateRange.endDate}
-                <span className="ml-2 text-gray-400">(includes full day boundaries)</span>
+                <span className="ml-2 text-gray-400">
+                  (includes full day boundaries)
+                </span>
               </p>
             </>
           )}
@@ -142,11 +145,11 @@ export default function HomePage() {
               iconBgColor="bg-amber-100"
             />
             <StatsCard
-              title="Approved"
-              value={bookingStats?.approved || 0}
-              icon={CheckCircle}
-              iconColor="text-green-600"
-              iconBgColor="bg-green-100"
+              title="Pending Approval"
+              value={bookingStats?.pendingApproval || 0}
+              icon={Users}
+              iconColor="text-orange-600"
+              iconBgColor="bg-orange-100"
             />
             <StatsCard
               title="Total Revenue"
@@ -175,11 +178,11 @@ export default function HomePage() {
         ) : (
           <>
             <StatsCard
-              title="Pending Approval"
-              value={bookingStats?.pendingApproval || 0}
-              icon={Users}
-              iconColor="text-orange-600"
-              iconBgColor="bg-orange-100"
+              title="Unassigned"
+              value={bookingStats?.approved || 0}
+              icon={CheckCircle}
+              iconColor="text-green-600"
+              iconBgColor="bg-green-100"
             />
             <StatsCard
               title="Avg. Booking Value"
@@ -207,8 +210,12 @@ export default function HomePage() {
             {revenueTrend && (
               <StatsCard
                 title="Revenue Trend"
-                value={`${revenueTrend.percentageChange >= 0 ? "+" : ""}${revenueTrend.percentageChange.toFixed(1)}%`}
-                icon={revenueTrend.percentageChange >= 0 ? TrendingUp : TrendingDown}
+                value={`${
+                  revenueTrend.percentageChange >= 0 ? "+" : ""
+                }${revenueTrend.percentageChange.toFixed(1)}%`}
+                icon={
+                  revenueTrend.percentageChange >= 0 ? TrendingUp : TrendingDown
+                }
                 iconColor={
                   revenueTrend.percentageChange >= 0
                     ? "text-green-600"

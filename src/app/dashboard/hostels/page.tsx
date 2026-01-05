@@ -165,12 +165,7 @@ export default function HostelsPage() {
       const enriched = await enrichHostelsWithDetails(hostelsData.hostels);
       const fullyEnriched = enrichHostelsWithAdminData(enriched);
 
-      setHostels(
-        fullyEnriched,
-        hostelsData.total,
-        1,
-        hostelsData.totalPages
-      );
+      setHostels(fullyEnriched, hostelsData.total, 1, hostelsData.totalPages);
     } catch (error) {
       console.error("Failed to reload hostels:", error);
     }

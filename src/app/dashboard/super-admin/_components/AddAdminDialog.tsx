@@ -24,7 +24,7 @@ import { useAdminStore } from "@/stores/useAdminStore";
 import { adminFormSchema, AdminFormData } from "../_validations/adminSchema";
 import { useAdminApi } from "../_hooks/useAdminApi";
 import { Loader2, AlertCircle } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface AddAdminDialogProps {
   isOpen: boolean;
@@ -35,8 +35,9 @@ export default function AddAdminDialog({
   isOpen,
   onClose,
 }: AddAdminDialogProps) {
-  const { loading, error, hostels } = useAdminStore();
+  const { error, hostels } = useAdminStore();
   const { createAdmin, fetchHostels } = useAdminApi();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<AdminFormData>({
     resolver: zodResolver(adminFormSchema),
@@ -70,13 +71,17 @@ export default function AddAdminDialog({
 
   const handleDialogClose = () => {
     reset();
+    setIsSubmitting(false);
     onClose();
   };
 
   const onSubmit: SubmitHandler<AdminFormData> = async (data) => {
+    setIsSubmitting(true);
     const result = await createAdmin(data);
     if (result) {
       handleDialogClose();
+    } else {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,7 +117,7 @@ export default function AddAdminDialog({
                 id="firstName"
                 placeholder="e.g., John"
                 {...register("firstName")}
-                disabled={loading}
+                disabled={isSubmitting}
               />
               {errors.firstName && (
                 <p className="text-sm text-red-500">
@@ -127,7 +132,7 @@ export default function AddAdminDialog({
                 id="lastName"
                 placeholder="e.g., Doe"
                 {...register("lastName")}
-                disabled={loading}
+                disabled={isSubmitting}
               />
               {errors.lastName && (
                 <p className="text-sm text-red-500">
@@ -146,7 +151,7 @@ export default function AddAdminDialog({
                 type="email"
                 placeholder="admin@hostella.com"
                 {...register("email")}
-                disabled={loading}
+                disabled={isSubmitting}
               />
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -160,7 +165,7 @@ export default function AddAdminDialog({
                 type="tel"
                 placeholder="+1234567890"
                 {...register("phone")}
-                disabled={loading}
+                disabled={isSubmitting}
               />
               {errors.phone && (
                 <p className="text-sm text-red-500">{errors.phone.message}</p>
@@ -179,7 +184,7 @@ export default function AddAdminDialog({
                   setValue("assignedHostelId", "");
                 }
               }}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               <SelectTrigger id="role">
                 <SelectValue placeholder="Select admin role" />
@@ -217,7 +222,7 @@ export default function AddAdminDialog({
                 setValue("assignedHostelId", value);
               }}
               disabled={
-                loading ||
+                isSubmitting ||
                 selectedRole === "super-admin" ||
                 availableHostels.length === 0
               }
@@ -236,8 +241,7 @@ export default function AddAdminDialog({
               <SelectContent>
                 {availableHostels.map((hostel) => (
                   <SelectItem key={hostel.id} value={hostel.id}>
-                    {hostel.name} - {hostel.location} (Rooms:{" "}
-                    {hostel.totalRooms})
+                    {hostel.name} - {hostel.location}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -270,7 +274,7 @@ export default function AddAdminDialog({
               type="button"
               variant="outline"
               onClick={handleDialogClose}
-              disabled={loading}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
@@ -278,12 +282,12 @@ export default function AddAdminDialog({
               type="submit"
               className="bg-blue-600 hover:bg-blue-700"
               disabled={
-                loading ||
+                isSubmitting ||
                 (selectedRole === "hostel-admin" &&
                   availableHostels.length === 0)
               }
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating...

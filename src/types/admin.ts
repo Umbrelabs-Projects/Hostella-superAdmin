@@ -18,7 +18,7 @@ export interface Hostel {
   totalRooms: number;
   singleRooms: number;
   doubleRooms: number;
-  tripleRooms: number; // NEW: triple room support
+  tripleRooms?: number; // Optional: triple room support (may not exist for older hostels)
   facilities: string[]; // e.g., ["Wi-Fi", "Laundry", "Gym", "Study Room"]
   description?: string | null; // Optional hostel description
   images?: HostelImage[]; // Optional hostel images

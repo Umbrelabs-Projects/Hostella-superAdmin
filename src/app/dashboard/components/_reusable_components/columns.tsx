@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { StudentBooking } from "@/types/booking";
+import { StudentBooking, BOOKING_STATUS_LABELS } from "@/types/booking";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Info, Trash2 } from "lucide-react";
@@ -55,16 +55,20 @@ export const columns = ({ onView, onDelete, showStatus = true, showAssigned = fa
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as StudentBooking["status"];
-        // Replace 'approved' display with 'unassigned' per UI decision
-        const label = status === "approved" ? "unassigned" : status;
+        // Replace 'APPROVED' display with 'unassigned' per UI decision
+        const label = status === "APPROVED" ? "Unassigned" : BOOKING_STATUS_LABELS[status] || status;
         const cls =
-          label === "pending payment"
+          status === "PENDING_PAYMENT"
             ? "bg-amber-100 text-amber-800"
-            : label === "pending approval"
+            : status === "PENDING_APPROVAL"
             ? "bg-orange-100 text-orange-800"
-            : label === "unassigned"
+            : status === "APPROVED"
             ? "bg-slate-100 text-slate-800"
-            : "bg-green-100 text-green-800";
+            : status === "ROOM_ALLOCATED" || status === "COMPLETED"
+            ? "bg-green-100 text-green-800"
+            : status === "CANCELLED" || status === "REJECTED" || status === "EXPIRED"
+            ? "bg-red-100 text-red-800"
+            : "bg-gray-100 text-gray-800";
         return <Badge className={cls}>{label}</Badge>;
       },
     });
@@ -82,7 +86,7 @@ export const columns = ({ onView, onDelete, showStatus = true, showAssigned = fa
       cell: ({ row }) => {
         const booking = row.original;
         // Do not show assigned room for pending statuses
-        if (booking.status === "pending payment" || booking.status === "pending approval") {
+        if (booking.status === "PENDING_PAYMENT" || booking.status === "PENDING_APPROVAL") {
           return <span className="text-muted-foreground">—</span>;
         }
         return booking.allocatedRoomNumber != null ? String(booking.allocatedRoomNumber) : <span className="text-muted-foreground">—</span>;

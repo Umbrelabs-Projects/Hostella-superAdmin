@@ -87,7 +87,7 @@ export function useBookingApi() {
   };
 
   const approveBooking = async (bookingId: string) => {
-    return updateBooking(bookingId, { status: "approved" });
+    return updateBooking(bookingId, { status: "APPROVED" });
   };
 
   const deleteBooking = async (bookingId: string) => {

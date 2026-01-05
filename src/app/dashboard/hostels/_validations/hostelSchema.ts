@@ -22,7 +22,6 @@ export const createHostelSchema = z
     singleRooms: z.number().int().min(0).optional(),
     doubleRooms: z.number().int().min(0).optional(),
     tripleRooms: z.number().int().min(0).optional(),
-    tripleRooms: z.number().int().min(0).optional(),
     facilities: z.array(z.string()).default([]),
     description: z.string().optional().nullable(),
   })

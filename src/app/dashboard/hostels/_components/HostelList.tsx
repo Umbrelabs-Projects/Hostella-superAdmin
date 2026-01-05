@@ -54,7 +54,17 @@ export default function HostelList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {hostelList.map((hostel) => (
+            {hostelList.map((hostel) => {
+              // Debug logging
+              if (process.env.NODE_ENV === "development") {
+                console.log(`[HostelList] ${hostel.name}:`, {
+                  singleRooms: hostel.singleRooms,
+                  doubleRooms: hostel.doubleRooms,
+                  tripleRooms: hostel.tripleRooms,
+                  totalRooms: hostel.totalRooms,
+                });
+              }
+              return (
               <TableRow key={hostel.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium">
                   <button
@@ -65,20 +75,24 @@ export default function HostelList({
                   </button>
                 </TableCell>
                 <TableCell className="text-sm text-gray-600">
-                  {hostel.location}
+                  {hostel.location || "—"}
                 </TableCell>
                 <TableCell className="text-sm text-gray-600">
-                  {hostel.campus}
+                  {hostel.campus || "—"}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {hostel.singleRooms} Single
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {hostel.doubleRooms} Double
-                    </Badge>
-                    {hostel.tripleRooms && hostel.tripleRooms > 0 && (
+                    {hostel.singleRooms > 0 && (
+                      <Badge variant="outline" className="text-xs">
+                        {hostel.singleRooms} Single
+                      </Badge>
+                    )}
+                    {hostel.doubleRooms > 0 && (
+                      <Badge variant="outline" className="text-xs">
+                        {hostel.doubleRooms} Double
+                      </Badge>
+                    )}
+                    {(hostel.tripleRooms ?? 0) > 0 && (
                       <Badge variant="outline" className="text-xs">
                         {hostel.tripleRooms} Triple
                       </Badge>
@@ -131,7 +145,8 @@ export default function HostelList({
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>

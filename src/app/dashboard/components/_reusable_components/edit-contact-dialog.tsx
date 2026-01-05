@@ -54,16 +54,23 @@ export default function EditContactDialog({
   };
 
   const statusVariant = (status: StudentBooking["status"]) =>
-    status === "pending payment" ? "secondary" : status === "pending approval" ? "outline" : "default";
+    status === "PENDING_PAYMENT" ? "secondary" : status === "PENDING_APPROVAL" ? "outline" : "default";
 
   // For super admin, we consider someone a member if they have completed onboarding (allocatedRoomNumber exists and approved)
-  const isMember = local.status === "approved" && local.allocatedRoomNumber != null;
+  const isMember = local.status === "APPROVED" && local.allocatedRoomNumber != null;
 
   const displayStatus = (() => {
     if (isMember) {
       return "Member";
     }
-    if (local.status === "approved") return "unassigned";
+    if (local.status === "APPROVED") return "Unassigned";
+    if (local.status === "PENDING_PAYMENT") return "Pending Payment";
+    if (local.status === "PENDING_APPROVAL") return "Pending Approval";
+    if (local.status === "ROOM_ALLOCATED") return "Room Allocated";
+    if (local.status === "COMPLETED") return "Completed";
+    if (local.status === "CANCELLED") return "Cancelled";
+    if (local.status === "REJECTED") return "Rejected";
+    if (local.status === "EXPIRED") return "Expired";
     return local.status;
   })();
 
@@ -161,25 +168,25 @@ export default function EditContactDialog({
               <X className="size-4 mr-2" />Close
             </Button>
 
-            {local.status === "pending payment" && (
+            {local.status === "PENDING_PAYMENT" && (
               <Button onClick={() => onApprovePayment?.(local.id)}>
                 <CreditCard className="size-4 mr-2" />Approve Payment
               </Button>
             )}
 
-            {local.status === "pending approval" && (
+            {local.status === "PENDING_APPROVAL" && (
               <Button onClick={() => onApprove?.(local.id)}>
                 <Check className="size-4 mr-2" />Approve
               </Button>
             )}
 
             {/* If booking is approved and not yet an explicit member, allow Assign Room (even if a room exists in data) */}
-            {local.status === "approved" && !isMember && (
+            {local.status === "APPROVED" && !isMember && (
               <Button onClick={handleAssign}><Key className="size-4 mr-2" />Assign Room</Button>
             )}
 
             {/* Complete Onboarding only shown after a room is assigned via the UI (assignedNow) */}
-            {local.allocatedRoomNumber != null && local.status === "approved" && !isMember && assignedNow && (
+            {local.allocatedRoomNumber != null && local.status === "APPROVED" && !isMember && assignedNow && (
               <Button className="bg-teal-600 hover:bg-teal-700" onClick={() => onCompleteOnboarding?.(local.id)}>
                 <Check className="size-4 mr-2" />Complete Onboarding
               </Button>

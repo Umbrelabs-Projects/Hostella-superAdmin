@@ -35,6 +35,21 @@ export function useHostelApi() {
         const data = await apiFetch<PaginatedHostelResponse>(
           `/hostels?${params.toString()}`
         );
+        
+        // Debug: Check what backend actually sends
+        if (process.env.NODE_ENV === "development" && data.hostels.length > 0) {
+          console.log("[HostelAPI] Backend response sample:", {
+            hostel: data.hostels[0].name,
+            hasRoomCounts: {
+              singleRooms: data.hostels[0].singleRooms,
+              doubleRooms: data.hostels[0].doubleRooms,
+              tripleRooms: data.hostels[0].tripleRooms,
+              totalRooms: data.hostels[0].totalRooms,
+            },
+            allFields: Object.keys(data.hostels[0]),
+          });
+        }
+        
         return data;
       } catch (err) {
         const message =
@@ -70,6 +85,31 @@ export function useHostelApi() {
       setLoading(false);
     }
   }, []);
+
+  const enrichHostelsWithDetails = useCallback(
+    async (hostels: Hostel[]): Promise<Hostel[]> => {
+      try {
+        // Fetch detailed info for all hostels in parallel
+        const detailedHostels = await Promise.all(
+          hostels.map(async (hostel) => {
+            try {
+              const detailed = await fetchHostelById(hostel.id);
+              return detailed;
+            } catch (err) {
+              // If enrichment fails, return original with logging
+              console.warn(`Failed to enrich hostel ${hostel.id}:`, err);
+              return hostel;
+            }
+          })
+        );
+        return detailedHostels;
+      } catch (err) {
+        console.error("Failed to enrich hostels:", err);
+        return hostels; // Return original if enrichment completely fails
+      }
+    },
+    [fetchHostelById]
+  );
 
   const createHostel = async (data: CreateHostelFormData): Promise<Hostel> => {
     setLoading(true);
@@ -283,6 +323,7 @@ export function useHostelApi() {
     error,
     fetchHostels,
     fetchHostelById,
+    enrichHostelsWithDetails,
     createHostel,
     updateHostel,
     deleteHostel,

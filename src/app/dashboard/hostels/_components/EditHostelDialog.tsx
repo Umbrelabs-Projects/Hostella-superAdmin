@@ -80,6 +80,7 @@ export default function EditHostelDialog({
             totalRooms: hostel.totalRooms,
             singleRooms: hostel.singleRooms,
             doubleRooms: hostel.doubleRooms,
+            tripleRooms: hostel.tripleRooms ?? 0,
             facilities: hostel.facilities,
             description: hostel.description ?? null,
           });
@@ -98,6 +99,7 @@ export default function EditHostelDialog({
             totalRooms: fullHostel.totalRooms,
             singleRooms: fullHostel.singleRooms,
             doubleRooms: fullHostel.doubleRooms,
+            tripleRooms: fullHostel.tripleRooms ?? 0,
             facilities: fullHostel.facilities,
             description: fullHostel.description ?? null,
           });

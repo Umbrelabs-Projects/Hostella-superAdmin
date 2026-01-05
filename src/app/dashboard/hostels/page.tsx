@@ -17,7 +17,7 @@ import Pagination from "@/components/ui/pagination";
 import CreateHostelDialog from "./_components/CreateHostelDialog";
 
 export default function HostelsPage() {
-  const { fetchHostels, loading } = useHostelApi();
+  const { fetchHostels, enrichHostelsWithDetails, loading } = useHostelApi();
   const { fetchAdmins } = useAdminApi();
   const {
     hostels,
@@ -64,7 +64,8 @@ export default function HostelsPage() {
       if (document.visibilityState !== "visible") return;
       try {
         const data = await fetchHostels(page, 10, searchQuery);
-        setHostels(data.hostels, data.total, data.page, data.totalPages);
+        const enriched = await enrichHostelsWithDetails(data.hostels);
+        setHostels(enriched, data.total, data.page, data.totalPages);
       } catch (error) {
         console.error("Failed to refresh hostels on visibility:", error);
       }
@@ -77,14 +78,16 @@ export default function HostelsPage() {
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, searchQuery, fetchHostels, setHostels]);
+  }, [page, searchQuery, fetchHostels, enrichHostelsWithDetails, setHostels]);
 
   // Initial and on-change fetch
   useEffect(() => {
     const loadHostels = async () => {
       try {
         const data = await fetchHostels(page, 10, searchQuery);
-        setHostels(data.hostels, data.total, data.page, data.totalPages);
+        // Enrich with detailed info to get room counts
+        const enriched = await enrichHostelsWithDetails(data.hostels);
+        setHostels(enriched, data.total, data.page, data.totalPages);
       } catch (error) {
         console.error("Failed to load hostels:", error);
       }

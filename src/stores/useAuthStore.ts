@@ -60,7 +60,8 @@ export const useAuthStore = create<AuthState>()(
 
           // Check if user has SUPER_ADMIN role
           if (res.user.role !== "SUPER_ADMIN") {
-            const errorMessage = "Access denied. Only SUPER_ADMIN users can access this application.";
+            const errorMessage =
+              "Access denied. Only SUPER_ADMIN users can access this application.";
             set({ error: errorMessage, loading: false });
             setAuthToken(null); // Clear any token that might have been set
             throw new Error(errorMessage);
@@ -95,7 +96,7 @@ export const useAuthStore = create<AuthState>()(
             if (token) {
               setAuthToken(token);
               const user = await apiFetch<User>("/auth/me");
-              
+
               // Check if user has SUPER_ADMIN role
               if (user.role !== "SUPER_ADMIN") {
                 // Clear invalid session
@@ -104,7 +105,7 @@ export const useAuthStore = create<AuthState>()(
                 localStorage.removeItem("auth-storage");
                 return;
               }
-              
+
               set({ user, token, initializing: false });
               return;
             }
@@ -164,7 +165,10 @@ export const useAuthStore = create<AuthState>()(
               console.error("[updateProfile] Refetch failed:", error);
             }
             // Check if refetch failed due to 401
-            if (error instanceof Error && error.message.includes("Unauthorized")) {
+            if (
+              error instanceof Error &&
+              error.message.includes("Unauthorized")
+            ) {
               // Token is invalid, trigger logout
               setAuthToken(null);
               set({ user: null, token: null, loading: false });
@@ -174,8 +178,9 @@ export const useAuthStore = create<AuthState>()(
             // If refetch fails, still keep the returned user data
           }
         } catch (err) {
-          const message = err instanceof Error ? err.message : "Profile update failed";
-          
+          const message =
+            err instanceof Error ? err.message : "Profile update failed";
+
           // Check if error is due to 401 (Unauthorized)
           if (message.includes("Unauthorized")) {
             setAuthToken(null);

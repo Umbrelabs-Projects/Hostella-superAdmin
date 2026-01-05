@@ -89,7 +89,7 @@ export default function EditContactDialog({
   })();
 
   const displayVariant = (() => {
-    if (displayStatus === "unassigned") return "outline";
+    if (displayStatus === "Unassigned") return "outline";
     if (displayStatus.startsWith("Member")) return "default";
     return statusVariant(local.status);
   })();

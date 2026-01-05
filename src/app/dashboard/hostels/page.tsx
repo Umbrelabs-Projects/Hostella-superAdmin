@@ -185,9 +185,8 @@ export default function HostelsPage() {
             disabled={loading}
             size="sm"
           >
-            <RefreshCw
-              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-            /> Refresh
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />{" "}
+            Refresh
           </Button>
           <Button
             onClick={() => setCreateDialogOpen(true)}

@@ -179,6 +179,7 @@ export default function HostelsPage() {
           onAssignAdmin={handleAssignAdmin}
         />
       )}
+      {/* Removed triple room count summary as requested */}
 
       {/* Pagination */}
       {totalPages > 1 && (

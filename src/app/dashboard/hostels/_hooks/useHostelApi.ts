@@ -86,14 +86,16 @@ export function useHostelApi() {
         description: data.description ?? null,
       };
 
-      // Include room fields if provided (totalRooms must be > 0, singleRooms/doubleRooms can be 0)
+      // Include room fields if provided (totalRooms must be > 0, singleRooms/doubleRooms/tripleRooms can be 0)
       if (data.totalRooms !== undefined && data.totalRooms > 0) {
         apiData.totalRooms = data.totalRooms;
-        // If totalRooms is provided, also include singleRooms and doubleRooms
+        // If totalRooms is provided, also include singleRooms, doubleRooms, tripleRooms
         if (data.singleRooms !== undefined)
           apiData.singleRooms = data.singleRooms;
         if (data.doubleRooms !== undefined)
           apiData.doubleRooms = data.doubleRooms;
+        if (data.tripleRooms !== undefined)
+          apiData.tripleRooms = data.tripleRooms;
       }
 
       const hostel = await apiFetch<Hostel>("/hostels", {
@@ -134,6 +136,8 @@ export function useHostelApi() {
           apiData.singleRooms = data.singleRooms;
         if (data.doubleRooms !== undefined)
           apiData.doubleRooms = data.doubleRooms;
+        if (data.tripleRooms !== undefined)
+          apiData.tripleRooms = data.tripleRooms;
       }
       if (data.facilities !== undefined) apiData.facilities = data.facilities;
       if (data.description !== undefined)

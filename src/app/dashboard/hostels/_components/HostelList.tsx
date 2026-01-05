@@ -78,6 +78,11 @@ export default function HostelList({
                     <Badge variant="outline" className="text-xs">
                       {hostel.doubleRooms} Double
                     </Badge>
+                    {hostel.tripleRooms && hostel.tripleRooms > 0 && (
+                      <Badge variant="outline" className="text-xs">
+                        {hostel.tripleRooms} Triple
+                      </Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>

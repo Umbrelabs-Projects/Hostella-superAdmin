@@ -54,6 +54,7 @@ export default function EditHostelDialog({
     totalRooms: 0,
     singleRooms: 0,
     doubleRooms: 0,
+    tripleRooms: 0,
     facilities: undefined,
     description: null,
   });
@@ -129,13 +130,14 @@ export default function EditHostelDialog({
   useEffect(() => {
     const single = formData.singleRooms || 0;
     const double = formData.doubleRooms || 0;
+    const triple = formData.tripleRooms || 0;
     const total = formData.totalRooms;
-    const sum = single + double;
+    const sum = single + double + triple;
 
     if (total !== undefined && total > 0 && sum !== total) {
       setErrors((prev) => ({
         ...prev,
-        totalRooms: `Single (${single}) + Double (${double}) must equal Total (${total})`,
+        totalRooms: `Single (${single}) + Double (${double}) + Triple (${triple}) must equal Total (${total})`,
       }));
     } else {
       setErrors((prev) => {
@@ -144,7 +146,12 @@ export default function EditHostelDialog({
         return rest;
       });
     }
-  }, [formData.singleRooms, formData.doubleRooms, formData.totalRooms]);
+  }, [
+    formData.singleRooms,
+    formData.doubleRooms,
+    formData.tripleRooms,
+    formData.totalRooms,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,6 +387,23 @@ export default function EditHostelDialog({
                   })
                 }
                 required
+              />
+            </div>
+
+            {/* Triple Rooms */}
+            <div>
+              <Label htmlFor="tripleRooms">Triple Rooms</Label>
+              <Input
+                id="tripleRooms"
+                type="number"
+                min="0"
+                value={formData.tripleRooms ?? 0}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    tripleRooms: parseInt(e.target.value) || 0,
+                  })
+                }
               />
             </div>
 

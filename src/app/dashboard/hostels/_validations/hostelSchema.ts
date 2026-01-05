@@ -21,6 +21,8 @@ export const createHostelSchema = z
     totalRooms: z.number().int().positive().optional(),
     singleRooms: z.number().int().min(0).optional(),
     doubleRooms: z.number().int().min(0).optional(),
+    tripleRooms: z.number().int().min(0).optional(),
+    tripleRooms: z.number().int().min(0).optional(),
     facilities: z.array(z.string()).default([]),
     description: z.string().optional().nullable(),
   })
@@ -28,13 +30,16 @@ export const createHostelSchema = z
     (data) => {
       if (data.totalRooms !== undefined && data.totalRooms > 0) {
         return (
-          (data.singleRooms || 0) + (data.doubleRooms || 0) === data.totalRooms
+          (data.singleRooms || 0) +
+            (data.doubleRooms || 0) +
+            (data.tripleRooms || 0) ===
+          data.totalRooms
         );
       }
       return true;
     },
     {
-      message: "Single rooms + Double rooms must equal Total rooms",
+      message: "Single + Double + Triple rooms must equal Total rooms",
       path: ["totalRooms"],
     }
   );
@@ -60,6 +65,7 @@ export const updateHostelSchema = z
     totalRooms: z.number().int().positive().optional(),
     singleRooms: z.number().int().min(0).optional(),
     doubleRooms: z.number().int().min(0).optional(),
+    tripleRooms: z.number().int().min(0).optional(),
     facilities: z.array(z.string()).optional(),
     description: z.string().optional().nullable(),
   })
@@ -67,13 +73,16 @@ export const updateHostelSchema = z
     (data) => {
       if (data.totalRooms !== undefined && data.totalRooms > 0) {
         return (
-          (data.singleRooms || 0) + (data.doubleRooms || 0) === data.totalRooms
+          (data.singleRooms || 0) +
+            (data.doubleRooms || 0) +
+            (data.tripleRooms || 0) ===
+          data.totalRooms
         );
       }
       return true;
     },
     {
-      message: "Single rooms + Double rooms must equal Total rooms",
+      message: "Single + Double + Triple rooms must equal Total rooms",
       path: ["totalRooms"],
     }
   );

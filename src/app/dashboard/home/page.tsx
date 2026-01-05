@@ -120,9 +120,10 @@ export default function HomePage() {
       )}
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {showLoading ? (
           <>
+            <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -160,6 +161,18 @@ export default function HomePage() {
               icon={DollarSign}
               iconColor="text-purple-600"
               iconBgColor="bg-purple-100"
+            />
+            {/* Triple Room Stats */}
+            <StatsCard
+              title="Triple Room Revenue"
+              value={`GHS ${(
+                analytics?.roomTypeDistribution?.find(
+                  (rt) => rt.roomType === "TRIPLE"
+                )?.revenue || 0
+              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
+              icon={TrendingUp}
+              iconColor="text-fuchsia-600"
+              iconBgColor="bg-fuchsia-100"
             />
           </>
         )}

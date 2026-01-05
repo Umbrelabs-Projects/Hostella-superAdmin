@@ -15,7 +15,13 @@ interface ColumnsConfig {
   showFloor?: boolean; // whether to include floor column (derived from room number)
 }
 
-export const columns = ({ onView, onDelete, showStatus = true, showAssigned = false, showFloor = false }: ColumnsConfig): ColumnDef<StudentBooking>[] => {
+export const columns = ({
+  onView,
+  onDelete,
+  showStatus = true,
+  showAssigned = false,
+  showFloor = false,
+}: ColumnsConfig): ColumnDef<StudentBooking>[] => {
   const base: ColumnDef<StudentBooking>[] = [
     {
       accessorKey: "firstName",
@@ -27,12 +33,16 @@ export const columns = ({ onView, onDelete, showStatus = true, showAssigned = fa
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-teal-600 text-white font-semibold text-xs">
-                {`${b.firstName?.[0] || ""}${b.lastName?.[0] || ""}`.toUpperCase()}
+                {`${b.firstName?.[0] || ""}${
+                  b.lastName?.[0] || ""
+                }`.toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <span className="font-semibold text-sm">{fullName}</span>
-              <span className="text-xs text-muted-foreground">{b.studentId}</span>
+              <span className="text-xs text-muted-foreground">
+                {b.studentId}
+              </span>
             </div>
           </div>
         );
@@ -56,7 +66,10 @@ export const columns = ({ onView, onDelete, showStatus = true, showAssigned = fa
       cell: ({ row }) => {
         const status = row.getValue("status") as StudentBooking["status"];
         // Replace 'APPROVED' display with 'unassigned' per UI decision
-        const label = status === "APPROVED" ? "Unassigned" : BOOKING_STATUS_LABELS[status] || status;
+        const label =
+          status === "APPROVED"
+            ? "Unassigned"
+            : BOOKING_STATUS_LABELS[status] || status;
         const cls =
           status === "PENDING_PAYMENT"
             ? "bg-amber-100 text-amber-800"
@@ -66,7 +79,9 @@ export const columns = ({ onView, onDelete, showStatus = true, showAssigned = fa
             ? "bg-slate-100 text-slate-800"
             : status === "ROOM_ALLOCATED" || status === "COMPLETED"
             ? "bg-green-100 text-green-800"
-            : status === "CANCELLED" || status === "REJECTED" || status === "EXPIRED"
+            : status === "CANCELLED" ||
+              status === "REJECTED" ||
+              status === "EXPIRED"
             ? "bg-red-100 text-red-800"
             : "bg-gray-100 text-gray-800";
         return <Badge className={cls}>{label}</Badge>;
@@ -86,10 +101,17 @@ export const columns = ({ onView, onDelete, showStatus = true, showAssigned = fa
       cell: ({ row }) => {
         const booking = row.original;
         // Do not show assigned room for pending statuses
-        if (booking.status === "PENDING_PAYMENT" || booking.status === "PENDING_APPROVAL") {
+        if (
+          booking.status === "PENDING_PAYMENT" ||
+          booking.status === "PENDING_APPROVAL"
+        ) {
           return <span className="text-muted-foreground">—</span>;
         }
-        return booking.allocatedRoomNumber != null ? String(booking.allocatedRoomNumber) : <span className="text-muted-foreground">—</span>;
+        return booking.allocatedRoomNumber != null ? (
+          String(booking.allocatedRoomNumber)
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
       },
     });
   }

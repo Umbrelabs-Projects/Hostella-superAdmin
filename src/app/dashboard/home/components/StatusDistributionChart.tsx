@@ -20,7 +20,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
     label: "Pending Approval",
     color: "#fb923c", // orange
   },
-  "Approved": {
+  Approved: {
     label: "Approved",
     color: "#8b5cf6", // purple
   },
@@ -28,19 +28,19 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
     label: "Room Allocated",
     color: "#3b82f6", // blue
   },
-  "Completed": {
+  Completed: {
     label: "Completed",
     color: "#10b981", // green
   },
-  "Cancelled": {
+  Cancelled: {
     label: "Cancelled",
     color: "#ef4444", // red
   },
-  "Rejected": {
+  Rejected: {
     label: "Rejected",
     color: "#dc2626", // dark red
   },
-  "Expired": {
+  Expired: {
     label: "Expired",
     color: "#6b7280", // gray
   },

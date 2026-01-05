@@ -13,7 +13,16 @@ import AssignRoomDialog from "./assign-room-dialog";
 import { Label } from "@/components/ui/label";
 import { StudentBooking } from "@/types/booking";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Home, User, Phone, Check, CreditCard, X, Key } from "lucide-react";
+import {
+  Copy,
+  Home,
+  User,
+  Phone,
+  Check,
+  CreditCard,
+  X,
+  Key,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface BookingDetailsDialogProps {
@@ -29,7 +38,7 @@ interface BookingDetailsDialogProps {
 export default function EditContactDialog({
   booking,
   onOpenChange,
-  
+
   onApprovePayment,
   onAssignRoom,
   onCompleteOnboarding,
@@ -54,10 +63,15 @@ export default function EditContactDialog({
   };
 
   const statusVariant = (status: StudentBooking["status"]) =>
-    status === "PENDING_PAYMENT" ? "secondary" : status === "PENDING_APPROVAL" ? "outline" : "default";
+    status === "PENDING_PAYMENT"
+      ? "secondary"
+      : status === "PENDING_APPROVAL"
+      ? "outline"
+      : "default";
 
   // For super admin, we consider someone a member if they have completed onboarding (allocatedRoomNumber exists and approved)
-  const isMember = local.status === "APPROVED" && local.allocatedRoomNumber != null;
+  const isMember =
+    local.status === "APPROVED" && local.allocatedRoomNumber != null;
 
   const displayStatus = (() => {
     if (isMember) {
@@ -80,7 +94,10 @@ export default function EditContactDialog({
     return statusVariant(local.status);
   })();
 
-  const floorNumber = local.allocatedRoomNumber != null ? Math.floor((local.allocatedRoomNumber - 1) / 10) + 1 : null;
+  const floorNumber =
+    local.allocatedRoomNumber != null
+      ? Math.floor((local.allocatedRoomNumber - 1) / 10) + 1
+      : null;
 
   useEffect(() => {
     // reset assignedNow when switching bookings
@@ -95,18 +112,29 @@ export default function EditContactDialog({
             <div>
               <DialogTitle className="flex items-center gap-3">
                 <User className="size-5 opacity-80" />
-                <span>{local.firstName} {local.lastName}</span>
+                <span>
+                  {local.firstName} {local.lastName}
+                </span>
               </DialogTitle>
               <DialogDescription className="mt-1 text-sm flex items-center gap-2">
                 <span>Booking ID:</span>
-                <span className="font-mono bg-muted/10 px-2 py-0.5 rounded">{local.bookingId}</span>
-                <Button variant="ghost" size="sm" className="h-7" onClick={copyBookingId}>
+                <span className="font-mono bg-muted/10 px-2 py-0.5 rounded">
+                  {local.bookingId}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7"
+                  onClick={copyBookingId}
+                >
                   <Copy className="size-4" />
                 </Button>
               </DialogDescription>
             </div>
             <div className="text-right">
-              <Badge variant={displayVariant} className="text-sm px-3">{displayStatus}</Badge>
+              <Badge variant={displayVariant} className="text-sm px-3">
+                {displayStatus}
+              </Badge>
             </div>
           </div>
         </DialogHeader>
@@ -115,7 +143,9 @@ export default function EditContactDialog({
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-1">
               <Label>Name</Label>
-              <div className="font-semibold">{local.firstName} {local.lastName}</div>
+              <div className="font-semibold">
+                {local.firstName} {local.lastName}
+              </div>
             </div>
             <div className="space-y-1">
               <Label>Student ID</Label>
@@ -124,7 +154,10 @@ export default function EditContactDialog({
 
             <div className="space-y-1">
               <Label>Phone</Label>
-              <div className="text-sm flex items-center gap-2"><Phone className="size-4 opacity-70" />{local.phone}</div>
+              <div className="text-sm flex items-center gap-2">
+                <Phone className="size-4 opacity-70" />
+                {local.phone}
+              </div>
             </div>
             <div className="space-y-1">
               <Label>Gender</Label>
@@ -137,12 +170,19 @@ export default function EditContactDialog({
             </div>
             <div className="space-y-1">
               <Label>Hostel</Label>
-              <div className="text-sm flex items-center gap-2"><Home className="size-4 opacity-70" />{local.hostelName}</div>
+              <div className="text-sm flex items-center gap-2">
+                <Home className="size-4 opacity-70" />
+                {local.hostelName}
+              </div>
             </div>
 
             <div className="space-y-1">
               <Label>Assigned Room</Label>
-              <div className="text-lg font-medium">{(isMember || assignedNow) ? (local.allocatedRoomNumber ?? "—") : "—"}</div>
+              <div className="text-lg font-medium">
+                {isMember || assignedNow
+                  ? local.allocatedRoomNumber ?? "—"
+                  : "—"}
+              </div>
             </div>
             {(isMember || assignedNow) && floorNumber != null && (
               <div className="space-y-1">
@@ -153,7 +193,7 @@ export default function EditContactDialog({
             <div />
           </div>
 
-          {(isMember) && (
+          {isMember && (
             <div className="space-y-2 pt-2 border-t">
               <Label>Emergency Contact</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -165,32 +205,45 @@ export default function EditContactDialog({
 
           <div className="flex gap-3 justify-end pt-4 border-t">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              <X className="size-4 mr-2" />Close
+              <X className="size-4 mr-2" />
+              Close
             </Button>
 
             {local.status === "PENDING_PAYMENT" && (
               <Button onClick={() => onApprovePayment?.(local.id)}>
-                <CreditCard className="size-4 mr-2" />Approve Payment
+                <CreditCard className="size-4 mr-2" />
+                Approve Payment
               </Button>
             )}
 
             {local.status === "PENDING_APPROVAL" && (
               <Button onClick={() => onApprove?.(local.id)}>
-                <Check className="size-4 mr-2" />Approve
+                <Check className="size-4 mr-2" />
+                Approve
               </Button>
             )}
 
             {/* If booking is approved and not yet an explicit member, allow Assign Room (even if a room exists in data) */}
             {local.status === "APPROVED" && !isMember && (
-              <Button onClick={handleAssign}><Key className="size-4 mr-2" />Assign Room</Button>
+              <Button onClick={handleAssign}>
+                <Key className="size-4 mr-2" />
+                Assign Room
+              </Button>
             )}
 
             {/* Complete Onboarding only shown after a room is assigned via the UI (assignedNow) */}
-            {local.allocatedRoomNumber != null && local.status === "APPROVED" && !isMember && assignedNow && (
-              <Button className="bg-teal-600 hover:bg-teal-700" onClick={() => onCompleteOnboarding?.(local.id)}>
-                <Check className="size-4 mr-2" />Complete Onboarding
-              </Button>
-            )}
+            {local.allocatedRoomNumber != null &&
+              local.status === "APPROVED" &&
+              !isMember &&
+              assignedNow && (
+                <Button
+                  className="bg-teal-600 hover:bg-teal-700"
+                  onClick={() => onCompleteOnboarding?.(local.id)}
+                >
+                  <Check className="size-4 mr-2" />
+                  Complete Onboarding
+                </Button>
+              )}
           </div>
         </div>
       </DialogContent>

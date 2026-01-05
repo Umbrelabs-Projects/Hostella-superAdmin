@@ -34,7 +34,11 @@ interface FieldConfig {
   selectOptions?: { value: string; label: string }[];
 }
 
-const FORM_SECTIONS: { title?: string; columns: number; fields: FieldConfig[] }[] = [
+const FORM_SECTIONS: {
+  title?: string;
+  columns: number;
+  fields: FieldConfig[];
+}[] = [
   {
     columns: 2,
     fields: [
@@ -92,8 +96,18 @@ const FORM_SECTIONS: { title?: string; columns: number; fields: FieldConfig[] }[
   {
     columns: 2,
     fields: [
-      { name: "emergencyContactName", label: "Emergency Contact Name", type: "text", placeholder: "Name" },
-      { name: "emergencyContactNumber", label: "Emergency Contact Number", type: "text", placeholder: "Phone" },
+      {
+        name: "emergencyContactName",
+        label: "Emergency Contact Name",
+        type: "text",
+        placeholder: "Name",
+      },
+      {
+        name: "emergencyContactNumber",
+        label: "Emergency Contact Number",
+        type: "text",
+        placeholder: "Phone",
+      },
     ],
   },
 ];
@@ -128,8 +142,13 @@ function FormField({ field, value, onChange }: FormFieldProps) {
   if (field.type === "select") {
     return (
       <div>
-        <Label className="mb-2" htmlFor={field.name}>{field.label}</Label>
-        <Select value={value || ""} onValueChange={(v) => onChange(field.name, v)}>
+        <Label className="mb-2" htmlFor={field.name}>
+          {field.label}
+        </Label>
+        <Select
+          value={value || ""}
+          onValueChange={(v) => onChange(field.name, v)}
+        >
           <SelectTrigger id={field.name}>
             <SelectValue />
           </SelectTrigger>
@@ -165,12 +184,12 @@ export default function AddContactDialog({
   onOpenChange,
   onAdd,
 }: AddBookingDialogProps) {
-  const [formData, setFormData] = useState<Partial<StudentBooking>>(DEFAULT_FORM_DATA);
+  const [formData, setFormData] =
+    useState<Partial<StudentBooking>>(DEFAULT_FORM_DATA);
 
   const handleFieldChange = (name: keyof StudentBooking, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -189,7 +208,10 @@ export default function AddContactDialog({
           className="space-y-4"
         >
           {FORM_SECTIONS.map((section, idx) => (
-            <div key={idx} className={`grid grid-cols-${section.columns} gap-4`}>
+            <div
+              key={idx}
+              className={`grid grid-cols-${section.columns} gap-4`}
+            >
               {section.fields.map((field) => (
                 <FormField
                   key={field.name}
@@ -216,4 +238,3 @@ export default function AddContactDialog({
     </Dialog>
   );
 }
-

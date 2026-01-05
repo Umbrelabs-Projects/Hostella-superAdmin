@@ -60,7 +60,8 @@ export const useAuthStore = create<AuthState>()(
 
           // Check if user has SUPER_ADMIN role
           if (res.user.role !== "SUPER_ADMIN") {
-            const errorMessage = "Access denied. Only SUPER_ADMIN users can access this application.";
+            const errorMessage =
+              "Access denied. Only SUPER_ADMIN users can access this application.";
             set({ error: errorMessage, loading: false });
             setAuthToken(null); // Clear any token that might have been set
             throw new Error(errorMessage);
@@ -93,25 +94,44 @@ export const useAuthStore = create<AuthState>()(
             const token = parsed?.state?.token;
 
             if (token) {
+              if (process.env.NODE_ENV === "development") {
+                console.log(
+                  "[restoreSession] Found stored token, restoring session"
+                );
+              }
               setAuthToken(token);
               const user = await apiFetch<User>("/auth/me");
-              
+
               // Check if user has SUPER_ADMIN role
               if (user.role !== "SUPER_ADMIN") {
                 // Clear invalid session
+                if (process.env.NODE_ENV === "development") {
+                  console.log(
+                    "[restoreSession] User is not SUPER_ADMIN, clearing session"
+                  );
+                }
                 setAuthToken(null);
                 set({ user: null, token: null, initializing: false });
                 localStorage.removeItem("auth-storage");
                 return;
               }
-              
+
+              if (process.env.NODE_ENV === "development") {
+                console.log("[restoreSession] Session restored successfully");
+              }
               set({ user, token, initializing: false });
               return;
             }
           }
 
+          if (process.env.NODE_ENV === "development") {
+            console.log("[restoreSession] No stored session found");
+          }
           set({ initializing: false });
-        } catch {
+        } catch (err) {
+          if (process.env.NODE_ENV === "development") {
+            console.error("[restoreSession] Error restoring session:", err);
+          }
           setAuthToken(null);
           set({ user: null, token: null, initializing: false });
         }
@@ -163,12 +183,31 @@ export const useAuthStore = create<AuthState>()(
             if (process.env.NODE_ENV === "development") {
               console.error("[updateProfile] Refetch failed:", error);
             }
+            // Check if refetch failed due to 401
+            if (
+              error instanceof Error &&
+              error.message.includes("Unauthorized")
+            ) {
+              // Token is invalid, trigger logout
+              setAuthToken(null);
+              set({ user: null, token: null, loading: false });
+              localStorage.removeItem("auth-storage");
+              throw new Error("Session expired. Please log in again.");
+            }
             // If refetch fails, still keep the returned user data
           }
         } catch (err) {
           const message =
             err instanceof Error ? err.message : "Profile update failed";
-          set({ error: message, loading: false });
+
+          // Check if error is due to 401 (Unauthorized)
+          if (message.includes("Unauthorized")) {
+            setAuthToken(null);
+            set({ user: null, token: null, error: message, loading: false });
+            localStorage.removeItem("auth-storage");
+          } else {
+            set({ error: message, loading: false });
+          }
           throw new Error(message);
         }
       },

@@ -11,18 +11,38 @@ interface StatusDistributionChartProps {
   data: StatusBreakdown[];
 }
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   "Pending Payment": {
     label: "Pending Payment",
-    color: "#ef4444",
+    color: "#f59e0b", // amber
   },
   "Pending Approval": {
     label: "Pending Approval",
-    color: "#f59e0b",
+    color: "#fb923c", // orange
   },
   Approved: {
     label: "Approved",
-    color: "#10b981",
+    color: "#8b5cf6", // purple
+  },
+  "Room Allocated": {
+    label: "Room Allocated",
+    color: "#3b82f6", // blue
+  },
+  Completed: {
+    label: "Completed",
+    color: "#10b981", // green
+  },
+  Cancelled: {
+    label: "Cancelled",
+    color: "#ef4444", // red
+  },
+  Rejected: {
+    label: "Rejected",
+    color: "#dc2626", // dark red
+  },
+  Expired: {
+    label: "Expired",
+    color: "#6b7280", // gray
   },
 };
 

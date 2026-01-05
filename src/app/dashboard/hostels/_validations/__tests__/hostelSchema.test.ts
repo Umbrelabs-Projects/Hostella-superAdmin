@@ -15,7 +15,8 @@ describe("Hostel Validation Schemas", () => {
         noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 60,
-        doubleRooms: 40,
+        doubleRooms: 30,
+        tripleRooms: 10,
         facilities: ["Wi-Fi", "Laundry"],
       };
 
@@ -32,7 +33,8 @@ describe("Hostel Validation Schemas", () => {
         noOfFloors: "3",
         totalRooms: 100,
         singleRooms: 50,
-        doubleRooms: 40, // 50 + 40 = 90, not 100
+        doubleRooms: 40,
+        tripleRooms: 5, // 50 + 40 + 5 = 95, not 100
         facilities: ["Wi-Fi"],
       };
 
@@ -40,6 +42,9 @@ describe("Hostel Validation Schemas", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].path).toContain("totalRooms");
+        expect(result.error.issues[0].message).toContain(
+          "Single + Double + Triple rooms must equal Total rooms"
+        );
       }
     });
 

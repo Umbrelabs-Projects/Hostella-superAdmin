@@ -1,6 +1,10 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { X, Upload } from "lucide-react";
+import Image from "next/image";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,32 +12,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+import RoomFields from "./RoomFields";
+import FacilitiesFields from "./FacilitiesFields";
 import { useHostelApi } from "../_hooks/useHostelApi";
-import { CreateHostelFormData } from "../_validations/hostelSchema";
-import { toast } from "sonner";
-import { Upload, X } from "lucide-react";
 
-interface CreateHostelDialogProps {
+type CreateHostelDialogProps = {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
-}
+};
 
-const facilityOptions = [
-  "Wi-Fi",
-  "Laundry",
-  "Gym",
-  "Study Room",
-  "Common Room",
-  "Cafeteria",
-  "Security",
-  "Parking",
-];
+export type CreateHostelFormData = {
+  name: string;
+  location: string | null;
+  campus: string | null;
+  phoneNumber: string | null;
+  noOfFloors: string | null;
+  totalRooms: number;
+  singleRooms: number;
+  doubleRooms: number;
+  tripleRooms: number;
+  facilities: string[];
+  description: string | null;
+};
 
 export default function CreateHostelDialog({
   open,
@@ -47,9 +48,10 @@ export default function CreateHostelDialog({
     campus: null,
     phoneNumber: null,
     noOfFloors: null,
-    totalRooms: 0, // Initialize with 0 for required form fields
-    singleRooms: 0, // Initialize with 0 for required form fields
-    doubleRooms: 0, // Initialize with 0 for required form fields
+    totalRooms: 0,
+    singleRooms: 0,
+    doubleRooms: 0,
+    tripleRooms: 0,
     facilities: [],
     description: null,
   });
@@ -57,57 +59,57 @@ export default function CreateHostelDialog({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Real-time validation for room totals
   useEffect(() => {
     const single = formData.singleRooms ?? 0;
     const double = formData.doubleRooms ?? 0;
-    const total = formData.totalRooms ?? 0;
-    const sum = single + double;
-
-    if (total > 0 && sum !== total) {
+    const triple = formData.tripleRooms ?? 0;
+    const sum = single + double + triple;
+    if (formData.totalRooms > 0 && sum !== formData.totalRooms) {
       setErrors((prev) => ({
         ...prev,
-        totalRooms: `Single (${single}) + Double (${double}) must equal Total (${total})`,
+        totalRooms: `Single (${single}) + Double (${double}) + Triple (${triple}) must equal Total (${formData.totalRooms})`,
       }));
     } else {
       setErrors((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { totalRooms, ...rest } = prev;
+        const rest = { ...prev };
+        delete rest.totalRooms;
         return rest;
       });
     }
-  }, [formData.singleRooms, formData.doubleRooms, formData.totalRooms]);
+  }, [
+    formData.singleRooms,
+    formData.doubleRooms,
+    formData.tripleRooms,
+    formData.totalRooms,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (Object.keys(errors).length > 0) {
       toast.error("Please fix validation errors");
       return;
     }
-
     try {
-      // Create hostel first
       const createdHostel = await createHostel(formData);
-
-      // Upload image if provided
       if (imageFile && createdHostel.id) {
         try {
           await uploadHostelImage(createdHostel.id, imageFile);
         } catch (imageErr) {
-          // Log error but don't fail the entire operation
           console.error("Failed to upload image:", imageErr);
-          toast.warning("Hostel created but image upload failed");
+          toast.warning(
+            "Hostel created successfully, but image upload failed. You can add the image later."
+          );
         }
       }
-
       toast.success("Hostel created successfully");
       onSuccess();
       onClose();
       resetForm();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to create hostel"
+        err instanceof Error
+          ? err.message
+          : "Unable to create hostel. Please try again."
       );
     }
   };
@@ -122,6 +124,7 @@ export default function CreateHostelDialog({
       totalRooms: 0,
       singleRooms: 0,
       doubleRooms: 0,
+      tripleRooms: 0,
       facilities: [],
       description: null,
     });
@@ -133,7 +136,6 @@ export default function CreateHostelDialog({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       const validTypes = [
         "image/jpeg",
         "image/jpg",
@@ -147,14 +149,11 @@ export default function CreateHostelDialog({
         );
         return;
       }
-
-      // Validate file size (5MB max)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         toast.error("File size exceeds 5MB limit.");
         return;
       }
-
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -169,28 +168,14 @@ export default function CreateHostelDialog({
     setImagePreview(null);
   };
 
-  const toggleFacility = (facility: string) => {
-    setFormData((prev) => {
-      const currentFacilities = prev.facilities || [];
-      return {
-        ...prev,
-        facilities: currentFacilities.includes(facility)
-          ? currentFacilities.filter((f) => f !== facility)
-          : [...currentFacilities, facility],
-      };
-    });
-  };
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Hostel</DialogTitle>
         </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            {/* Name */}
             <div className="col-span-2">
               <Label htmlFor="name">
                 Hostel Name <span className="text-red-500">*</span>
@@ -205,8 +190,6 @@ export default function CreateHostelDialog({
                 required
               />
             </div>
-
-            {/* Location */}
             <div>
               <Label htmlFor="location">Location</Label>
               <Input
@@ -218,8 +201,6 @@ export default function CreateHostelDialog({
                 placeholder="Enter location"
               />
             </div>
-
-            {/* Campus */}
             <div>
               <Label htmlFor="campus">Campus</Label>
               <Input
@@ -231,8 +212,6 @@ export default function CreateHostelDialog({
                 placeholder="Enter campus name"
               />
             </div>
-
-            {/* Phone */}
             <div>
               <Label htmlFor="phoneNumber">Phone</Label>
               <Input
@@ -244,8 +223,6 @@ export default function CreateHostelDialog({
                 placeholder="+1234567890"
               />
             </div>
-
-            {/* Floors */}
             <div>
               <Label htmlFor="noOfFloors">Number of Floors</Label>
               <Input
@@ -253,16 +230,12 @@ export default function CreateHostelDialog({
                 type="text"
                 value={formData.noOfFloors || ""}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    noOfFloors: e.target.value,
-                  })
+                  setFormData({ ...formData, noOfFloors: e.target.value })
                 }
                 placeholder="e.g. 4"
               />
             </div>
-
-            {/* Total Rooms */}
+            <RoomFields formData={formData} setFormData={setFormData} />
             <div>
               <Label htmlFor="totalRooms">
                 Total Rooms <span className="text-red-500">*</span>
@@ -285,93 +258,18 @@ export default function CreateHostelDialog({
                 <p className="text-red-500 text-sm mt-1">{errors.totalRooms}</p>
               )}
             </div>
-
-            {/* Single Rooms */}
-            <div>
-              <Label htmlFor="singleRooms">
-                Single Rooms <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="singleRooms"
-                type="number"
-                min="0"
-                value={formData.singleRooms ?? 0}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    singleRooms: parseInt(e.target.value) || 0,
-                  })
-                }
-                required
-              />
-            </div>
-
-            {/* Double Rooms */}
-            <div>
-              <Label htmlFor="doubleRooms">
-                Double Rooms <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="doubleRooms"
-                type="number"
-                min="0"
-                value={formData.doubleRooms ?? 0}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    doubleRooms: parseInt(e.target.value) || 0,
-                  })
-                }
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div className="col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description ?? ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    description: e.target.value || null,
-                  })
-                }
-                placeholder="Enter hostel description..."
-                rows={4}
-                className="resize-none"
-              />
-            </div>
+            <FacilitiesFields formData={formData} setFormData={setFormData} />
           </div>
-
-          {/* Facilities */}
-          <div>
-            <Label>Facilities</Label>
-            <div className="grid grid-cols-2 gap-3 mt-2">
-              {facilityOptions.map((facility) => (
-                <div key={facility} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={(formData.facilities || []).includes(facility)}
-                    onCheckedChange={() => toggleFacility(facility)}
-                  />
-                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                    {facility}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Image Upload */}
           <div>
             <Label htmlFor="image">Hostel Image</Label>
             <div className="mt-2">
               {imagePreview ? (
                 <div className="relative inline-block">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
+                    width={128}
+                    height={128}
                     className="h-32 w-32 object-cover rounded-lg border border-gray-300"
                   />
                   <button
@@ -383,11 +281,8 @@ export default function CreateHostelDialog({
                   </button>
                 </div>
               ) : (
-                <label
-                  htmlFor="image-upload"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <div className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 hover:bg-gray-100">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
                     <Upload className="w-8 h-8 mb-2 text-gray-500" />
                     <p className="mb-2 text-sm text-gray-500">
                       <span className="font-semibold">Click to upload</span> or
@@ -400,15 +295,14 @@ export default function CreateHostelDialog({
                   <input
                     id="image-upload"
                     type="file"
-                    className="hidden"
+                    className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                     accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                     onChange={handleImageChange}
                   />
-                </label>
+                </div>
               )}
             </div>
           </div>
-
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

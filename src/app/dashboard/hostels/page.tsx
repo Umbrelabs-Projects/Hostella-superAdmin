@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useHostelStore } from "@/stores/useHostelStore";
@@ -17,7 +17,7 @@ import Pagination from "@/components/ui/pagination";
 import CreateHostelDialog from "./_components/CreateHostelDialog";
 
 export default function HostelsPage() {
-  const { fetchHostels, loading } = useHostelApi();
+  const { fetchHostels, enrichHostelsWithDetails, loading } = useHostelApi();
   const { fetchAdmins } = useAdminApi();
   const {
     hostels,
@@ -39,6 +39,10 @@ export default function HostelsPage() {
     null
   );
   const [searchInput, setSearchInput] = useState(searchQuery);
+  const [initialLoad, setInitialLoad] = useState(true);
+
+  // Show skeleton only on initial load, not on subsequent refreshes
+  const showLoading = loading && initialLoad;
 
   // Keep admin list fresh (hostel-admins only) on mount and when tab becomes visible
   useEffect(() => {
@@ -64,7 +68,8 @@ export default function HostelsPage() {
       if (document.visibilityState !== "visible") return;
       try {
         const data = await fetchHostels(page, 10, searchQuery);
-        setHostels(data.hostels, data.total, data.page, data.totalPages);
+        const enriched = await enrichHostelsWithDetails(data.hostels);
+        setHostels(enriched, data.total, data.page, data.totalPages);
       } catch (error) {
         console.error("Failed to refresh hostels on visibility:", error);
       }
@@ -77,16 +82,20 @@ export default function HostelsPage() {
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, searchQuery, fetchHostels, setHostels]);
+  }, [page, searchQuery, fetchHostels, enrichHostelsWithDetails, setHostels]);
 
   // Initial and on-change fetch
   useEffect(() => {
     const loadHostels = async () => {
       try {
         const data = await fetchHostels(page, 10, searchQuery);
-        setHostels(data.hostels, data.total, data.page, data.totalPages);
+        // Enrich with detailed info to get room counts
+        const enriched = await enrichHostelsWithDetails(data.hostels);
+        setHostels(enriched, data.total, data.page, data.totalPages);
       } catch (error) {
         console.error("Failed to load hostels:", error);
+      } finally {
+        setInitialLoad(false);
       }
     };
 
@@ -141,9 +150,19 @@ export default function HostelsPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    try {
+      const data = await fetchHostels(page, 10, searchQuery);
+      const enriched = await enrichHostelsWithDetails(data.hostels);
+      setHostels(enriched, data.total, data.page, data.totalPages);
+    } catch (error) {
+      console.error("Failed to refresh hostels:", error);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Search and Stats */}
+      {/* Header with Search and Buttons */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative flex-1 max-w-md">
@@ -159,17 +178,28 @@ export default function HostelsPage() {
             Total: <span className="text-blue-600">{hostels.length}</span>
           </div>
         </div>
-        <Button
-          onClick={() => setCreateDialogOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Create Hostel
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            disabled={loading}
+            size="sm"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />{" "}
+            Refresh
+          </Button>
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Hostel
+          </Button>
+        </div>
       </div>
 
       {/* Hostel List */}
-      {loading ? (
+      {showLoading ? (
         <TableSkeleton rows={5} />
       ) : (
         <HostelList
@@ -179,6 +209,7 @@ export default function HostelsPage() {
           onAssignAdmin={handleAssignAdmin}
         />
       )}
+      {/* Removed triple room count summary as requested */}
 
       {/* Pagination */}
       {totalPages > 1 && (

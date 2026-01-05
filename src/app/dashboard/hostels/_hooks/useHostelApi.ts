@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { Hostel } from "@/types/admin";
 import {
@@ -18,32 +18,98 @@ export function useHostelApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHostels = async (
-    page = 1,
-    limit = 10,
-    search = ""
-  ): Promise<PaginatedHostelResponse> => {
+  const fetchHostels = useCallback(
+    async (
+      page = 1,
+      limit = 10,
+      search = ""
+    ): Promise<PaginatedHostelResponse> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+          ...(search && { search }),
+        });
+        const data = await apiFetch<PaginatedHostelResponse>(
+          `/hostels?${params.toString()}`
+        );
+
+        // Debug: Check what backend actually sends
+        if (process.env.NODE_ENV === "development" && data.hostels.length > 0) {
+          console.log("[HostelAPI] Backend response sample:", {
+            hostel: data.hostels[0].name,
+            hasRoomCounts: {
+              singleRooms: data.hostels[0].singleRooms,
+              doubleRooms: data.hostels[0].doubleRooms,
+              tripleRooms: data.hostels[0].tripleRooms,
+              totalRooms: data.hostels[0].totalRooms,
+            },
+            allFields: Object.keys(data.hostels[0]),
+          });
+        }
+
+        return data;
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch hostels";
+        setError(message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const fetchHostelById = useCallback(async (id: string): Promise<Hostel> => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(search && { search }),
-      });
-      const data = await apiFetch<PaginatedHostelResponse>(
-        `/hostels?${params.toString()}`
-      );
-      return data;
+      // The API returns { success: true, data: { hostel: ... } }
+      // apiFetch assumes the response is the data key if it exists, or the whole response
+      // We might need to adjust based on how apiFetch is implemented, but typically:
+      // If apiFetch returns T, we expect T to match the response structure.
+      // Based on fetchHostels, it returns PaginatedHostelResponse directly.
+      // Based on the user guide: GET /api/v1/hostels/{id} returns { success: true, data: { hostel: ... } }
+
+      const response = await apiFetch<{ hostel: Hostel }>(`/hostels/${id}`);
+      return response.hostel;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to fetch hostels";
+        err instanceof Error ? err.message : "Failed to fetch hostel details";
       setError(message);
       throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const enrichHostelsWithDetails = useCallback(
+    async (hostels: Hostel[]): Promise<Hostel[]> => {
+      try {
+        // Fetch detailed info for all hostels in parallel
+        const detailedHostels = await Promise.all(
+          hostels.map(async (hostel) => {
+            try {
+              const detailed = await fetchHostelById(hostel.id);
+              return detailed;
+            } catch (err) {
+              // If enrichment fails, return original with logging
+              console.warn(`Failed to enrich hostel ${hostel.id}:`, err);
+              return hostel;
+            }
+          })
+        );
+        return detailedHostels;
+      } catch (err) {
+        console.error("Failed to enrich hostels:", err);
+        return hostels; // Return original if enrichment completely fails
+      }
+    },
+    [fetchHostelById]
+  );
 
   const createHostel = async (data: CreateHostelFormData): Promise<Hostel> => {
     setLoading(true);
@@ -60,14 +126,16 @@ export function useHostelApi() {
         description: data.description ?? null,
       };
 
-      // Include room fields if provided (totalRooms must be > 0, singleRooms/doubleRooms can be 0)
+      // Include room fields if provided (totalRooms must be > 0, singleRooms/doubleRooms/tripleRooms can be 0)
       if (data.totalRooms !== undefined && data.totalRooms > 0) {
         apiData.totalRooms = data.totalRooms;
-        // If totalRooms is provided, also include singleRooms and doubleRooms
+        // If totalRooms is provided, also include singleRooms, doubleRooms, tripleRooms
         if (data.singleRooms !== undefined)
           apiData.singleRooms = data.singleRooms;
         if (data.doubleRooms !== undefined)
           apiData.doubleRooms = data.doubleRooms;
+        if (data.tripleRooms !== undefined)
+          apiData.tripleRooms = data.tripleRooms;
       }
 
       const hostel = await apiFetch<Hostel>("/hostels", {
@@ -108,6 +176,8 @@ export function useHostelApi() {
           apiData.singleRooms = data.singleRooms;
         if (data.doubleRooms !== undefined)
           apiData.doubleRooms = data.doubleRooms;
+        if (data.tripleRooms !== undefined)
+          apiData.tripleRooms = data.tripleRooms;
       }
       if (data.facilities !== undefined) apiData.facilities = data.facilities;
       if (data.description !== undefined)
@@ -252,6 +322,8 @@ export function useHostelApi() {
     loading,
     error,
     fetchHostels,
+    fetchHostelById,
+    enrichHostelsWithDetails,
     createHostel,
     updateHostel,
     deleteHostel,

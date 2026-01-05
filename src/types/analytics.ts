@@ -18,7 +18,7 @@ export interface DailyBookingTrend {
 }
 
 export interface RoomTypeDistribution {
-  roomType: string;
+  roomType: "SINGLE" | "DOUBLE" | "TRIPLE" | string;
   count: number;
   revenue: number;
   percentage: number;

@@ -8,19 +8,19 @@ describe("useBookingStore", () => {
     email: "john@example.com",
     firstName: "John",
     lastName: "Doe",
-    gender: "male",
+    gender: "MALE",
     level: "200",
     school: "Engineering",
     studentId: "STU001",
     phone: "1234567890",
     hostelName: "North Campus",
-    roomTitle: "Two-in-two",
+    roomTitle: "Two-in-one",
     price: "5000",
     emergencyContactName: "Jane Doe",
     emergencyContactNumber: "0987654321",
     relation: "Mother",
     hasMedicalCondition: false,
-    status: "approved",
+    status: "APPROVED",
     allocatedRoomNumber: 101,
     date: new Date().toISOString(),
   };
@@ -78,7 +78,7 @@ describe("useBookingStore", () => {
 
     const updatedBooking = {
       ...mockBooking,
-      status: "pending approval" as const,
+      status: "PENDING_APPROVAL" as const,
     };
 
     act(() => {
@@ -88,7 +88,7 @@ describe("useBookingStore", () => {
     const stored = result.current.bookings.find(
       (b: StudentBooking) => b.id === "1"
     );
-    expect(stored?.status).toBe("pending approval");
+    expect(stored?.status).toBe("PENDING_APPROVAL");
   });
 
   it("should remove booking", () => {

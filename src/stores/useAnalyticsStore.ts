@@ -4,7 +4,11 @@ import { create } from "zustand";
 import { DashboardAnalytics } from "@/types/analytics";
 
 export interface AnalyticsState {
-  analytics: DashboardAnalytics | null;
+  analytics:
+    | (DashboardAnalytics & {
+        roomTypeDistribution?: import("@/types/analytics").RoomTypeDistribution[];
+      })
+    | null;
   loading: boolean;
   error: string | null;
   dateRange: {
@@ -13,7 +17,11 @@ export interface AnalyticsState {
   };
 
   // Actions
-  setAnalytics: (analytics: DashboardAnalytics) => void;
+  setAnalytics: (
+    analytics: DashboardAnalytics & {
+      roomTypeDistribution?: import("@/types/analytics").RoomTypeDistribution[];
+    }
+  ) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setDateRange: (startDate: string, endDate: string) => void;
@@ -59,6 +67,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set) => ({
   setAnalytics: (analytics) => set({ analytics, error: null }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
-  setDateRange: (startDate, endDate) => set({ dateRange: { startDate, endDate } }),
+  setDateRange: (startDate, endDate) =>
+    set({ dateRange: { startDate, endDate } }),
   refreshAnalytics: () => set({ analytics: null, loading: true, error: null }),
 }));

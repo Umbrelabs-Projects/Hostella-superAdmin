@@ -34,7 +34,11 @@ interface FieldConfig {
   selectOptions?: { value: string; label: string }[];
 }
 
-const FORM_SECTIONS: { title?: string; columns: number; fields: FieldConfig[] }[] = [
+const FORM_SECTIONS: {
+  title?: string;
+  columns: number;
+  fields: FieldConfig[];
+}[] = [
   {
     columns: 2,
     fields: [
@@ -54,8 +58,9 @@ const FORM_SECTIONS: { title?: string; columns: number; fields: FieldConfig[] }[
         label: "Gender",
         type: "select",
         selectOptions: [
-          { value: "male", label: "Male" },
-          { value: "female", label: "Female" },
+          { value: "MALE", label: "Male" },
+          { value: "FEMALE", label: "Female" },
+          { value: "OTHER", label: "Other" },
         ],
       },
       {
@@ -80,8 +85,9 @@ const FORM_SECTIONS: { title?: string; columns: number; fields: FieldConfig[] }[
         label: "Room Type",
         type: "select",
         selectOptions: [
-          { value: "One-in-one", label: "One-in-one" },
-          { value: "Two-in-two", label: "Two-in-two" },
+          { value: "One-in-one", label: "One-in-one (Single)" },
+          { value: "Two-in-one", label: "Two-in-one (Double)" },
+          { value: "Three-in-one", label: "Three-in-one (Triple)" },
         ],
       },
       { name: "hostelName", label: "Hostel", type: "text" },
@@ -90,8 +96,18 @@ const FORM_SECTIONS: { title?: string; columns: number; fields: FieldConfig[] }[
   {
     columns: 2,
     fields: [
-      { name: "emergencyContactName", label: "Emergency Contact Name", type: "text", placeholder: "Name" },
-      { name: "emergencyContactNumber", label: "Emergency Contact Number", type: "text", placeholder: "Phone" },
+      {
+        name: "emergencyContactName",
+        label: "Emergency Contact Name",
+        type: "text",
+        placeholder: "Name",
+      },
+      {
+        name: "emergencyContactNumber",
+        label: "Emergency Contact Number",
+        type: "text",
+        placeholder: "Phone",
+      },
     ],
   },
 ];
@@ -101,18 +117,18 @@ const DEFAULT_FORM_DATA: Partial<StudentBooking> = {
   lastName: "",
   email: "",
   phone: "",
-  gender: "male",
+  gender: "MALE",
   studentId: "",
   level: "100",
   school: "",
   hostelName: "",
-  roomTitle: "Two-in-two",
+  roomTitle: "Two-in-one",
   price: "",
   emergencyContactName: "",
   emergencyContactNumber: "",
   relation: "",
   hasMedicalCondition: false,
-  status: "pending payment",
+  status: "PENDING_PAYMENT",
   date: new Date().toISOString().split("T")[0],
 };
 
@@ -126,8 +142,13 @@ function FormField({ field, value, onChange }: FormFieldProps) {
   if (field.type === "select") {
     return (
       <div>
-        <Label className="mb-2" htmlFor={field.name}>{field.label}</Label>
-        <Select value={value || ""} onValueChange={(v) => onChange(field.name, v)}>
+        <Label className="mb-2" htmlFor={field.name}>
+          {field.label}
+        </Label>
+        <Select
+          value={value || ""}
+          onValueChange={(v) => onChange(field.name, v)}
+        >
           <SelectTrigger id={field.name}>
             <SelectValue />
           </SelectTrigger>
@@ -163,12 +184,12 @@ export default function AddContactDialog({
   onOpenChange,
   onAdd,
 }: AddBookingDialogProps) {
-  const [formData, setFormData] = useState<Partial<StudentBooking>>(DEFAULT_FORM_DATA);
+  const [formData, setFormData] =
+    useState<Partial<StudentBooking>>(DEFAULT_FORM_DATA);
 
   const handleFieldChange = (name: keyof StudentBooking, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -187,7 +208,10 @@ export default function AddContactDialog({
           className="space-y-4"
         >
           {FORM_SECTIONS.map((section, idx) => (
-            <div key={idx} className={`grid grid-cols-${section.columns} gap-4`}>
+            <div
+              key={idx}
+              className={`grid grid-cols-${section.columns} gap-4`}
+            >
               {section.fields.map((field) => (
                 <FormField
                   key={field.name}
@@ -214,4 +238,3 @@ export default function AddContactDialog({
     </Dialog>
   );
 }
-

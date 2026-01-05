@@ -16,7 +16,7 @@ import {
   BookOpen,
   Clock,
   CheckCircle,
-  DollarSign,
+  Wallet,
   TrendingUp,
   Users,
   RefreshCw,
@@ -44,7 +44,8 @@ export default function HomePage() {
     };
 
     document.addEventListener("visibilitychange", refreshOnVisibility);
-    return () => document.removeEventListener("visibilitychange", refreshOnVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", refreshOnVisibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -76,7 +77,9 @@ export default function HomePage() {
               </p>
               <p className="text-xs text-gray-500">
                 Date range: {dateRange.startDate} - {dateRange.endDate}
-                <span className="ml-2 text-gray-400">(includes full day boundaries)</span>
+                <span className="ml-2 text-gray-400">
+                  (includes full day boundaries)
+                </span>
               </p>
             </>
           )}
@@ -117,9 +120,10 @@ export default function HomePage() {
       )}
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {showLoading ? (
           <>
+            <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -142,7 +146,14 @@ export default function HomePage() {
               iconBgColor="bg-amber-100"
             />
             <StatsCard
-              title="Approved"
+              title="Pending Approval"
+              value={bookingStats?.pendingApproval || 0}
+              icon={Users}
+              iconColor="text-orange-600"
+              iconBgColor="bg-orange-100"
+            />
+            <StatsCard
+              title="Unassigned"
               value={bookingStats?.approved || 0}
               icon={CheckCircle}
               iconColor="text-green-600"
@@ -154,61 +165,19 @@ export default function HomePage() {
                 "en-GH",
                 { minimumFractionDigits: 2 }
               )}`}
-              icon={DollarSign}
+              icon={Wallet}
               iconColor="text-purple-600"
               iconBgColor="bg-purple-100"
             />
-          </>
-        )}
-      </div>
-
-      {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {showLoading ? (
-          <>
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-          </>
-        ) : (
-          <>
-            <StatsCard
-              title="Pending Approval"
-              value={bookingStats?.pendingApproval || 0}
-              icon={Users}
-              iconColor="text-orange-600"
-              iconBgColor="bg-orange-100"
-            />
-            <StatsCard
-              title="Avg. Booking Value"
-              value={`GHS ${(
-                bookingStats?.averageBookingValue || 0
-              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
-              icon={TrendingUp}
-              iconColor="text-indigo-600"
-              iconBgColor="bg-indigo-100"
-            />
-            <StatsCard
-              title="Collection Rate"
-              value={`${(paymentStatus?.collectionRate || 0).toFixed(1)}%`}
-              icon={DollarSign}
-              iconColor="text-emerald-600"
-              iconBgColor="bg-emerald-100"
-            />
-            <StatsCard
-              title="Recent Bookings"
-              value={recentBookings ?? 0}
-              icon={Calendar}
-              iconColor="text-cyan-600"
-              iconBgColor="bg-cyan-100"
-            />
-            {revenueTrend && (
+                  {revenueTrend && (
               <StatsCard
                 title="Revenue Trend"
-                value={`${revenueTrend.percentageChange >= 0 ? "+" : ""}${revenueTrend.percentageChange.toFixed(1)}%`}
-                icon={revenueTrend.percentageChange >= 0 ? TrendingUp : TrendingDown}
+                value={`${
+                  revenueTrend.percentageChange >= 0 ? "+" : ""
+                }${revenueTrend.percentageChange.toFixed(1)}%`}
+                icon={
+                  revenueTrend.percentageChange >= 0 ? TrendingUp : TrendingDown
+                }
                 iconColor={
                   revenueTrend.percentageChange >= 0
                     ? "text-green-600"
@@ -225,6 +194,46 @@ export default function HomePage() {
                 }}
               />
             )}
+          </>
+        )}
+      </div>
+
+      {/* Additional Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {showLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatsCard
+              title="Avg. Booking Value"
+              value={`GHS ${(
+                bookingStats?.averageBookingValue || 0
+              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
+              icon={TrendingUp}
+              iconColor="text-indigo-600"
+              iconBgColor="bg-indigo-100"
+            />
+            <StatsCard
+              title="Collection Rate"
+              value={`${(paymentStatus?.collectionRate || 0).toFixed(1)}%`}
+              icon={Wallet}
+              iconColor="text-emerald-600"
+              iconBgColor="bg-emerald-100"
+            />
+            <StatsCard
+              title="Recent Bookings"
+              value={recentBookings ?? 0}
+              icon={Calendar}
+              iconColor="text-cyan-600"
+              iconBgColor="bg-cyan-100"
+            />
+      
           </>
         )}
       </div>

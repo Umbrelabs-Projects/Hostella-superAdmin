@@ -175,7 +175,9 @@ export default function EditHostelDialog({
         } catch (imageErr) {
           // Log error but don't fail the entire operation
           console.error("Failed to upload image:", imageErr);
-          toast.warning("Hostel updated successfully, but image upload failed. You can update it later.");
+          toast.warning(
+            "Hostel updated successfully, but image upload failed. You can update it later."
+          );
         }
       }
 
@@ -184,7 +186,9 @@ export default function EditHostelDialog({
       onClose();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Unable to update hostel. Please try again."
+        err instanceof Error
+          ? err.message
+          : "Unable to update hostel. Please try again."
       );
     }
   };

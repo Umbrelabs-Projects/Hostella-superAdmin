@@ -50,9 +50,6 @@ export default function HostelRevenueTable({ data }: HostelRevenueTableProps) {
               <TableHead className="font-semibold text-right">
                 Occupancy
               </TableHead>
-              <TableHead className="font-semibold text-right">
-                Triple Rooms
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,10 +93,6 @@ export default function HostelRevenueTable({ data }: HostelRevenueTableProps) {
                         {hostel.occupancyRate.toFixed(0)}%
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {/* Replace with actual triple room count if available in hostel object */}
-                    {hostel.tripleRooms ?? 0}
                   </TableCell>
                 </TableRow>
               ))

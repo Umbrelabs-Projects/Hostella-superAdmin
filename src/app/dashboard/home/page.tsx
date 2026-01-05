@@ -16,7 +16,7 @@ import {
   BookOpen,
   Clock,
   CheckCircle,
-  DollarSign,
+  Wallet,
   TrendingUp,
   Users,
   RefreshCw,
@@ -120,7 +120,7 @@ export default function HomePage() {
       )}
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {showLoading ? (
           <>
             <StatsCardSkeleton />
@@ -153,44 +153,6 @@ export default function HomePage() {
               iconBgColor="bg-orange-100"
             />
             <StatsCard
-              title="Total Revenue"
-              value={`GHS ${(bookingStats?.totalRevenue || 0).toLocaleString(
-                "en-GH",
-                { minimumFractionDigits: 2 }
-              )}`}
-              icon={DollarSign}
-              iconColor="text-purple-600"
-              iconBgColor="bg-purple-100"
-            />
-            {/* Triple Room Stats */}
-            <StatsCard
-              title="Triple Room Revenue"
-              value={`GHS ${(
-                analytics?.roomTypeDistribution?.find(
-                  (rt) => rt.roomType === "TRIPLE"
-                )?.revenue || 0
-              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
-              icon={TrendingUp}
-              iconColor="text-fuchsia-600"
-              iconBgColor="bg-fuchsia-100"
-            />
-          </>
-        )}
-      </div>
-
-      {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {showLoading ? (
-          <>
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-            <StatsCardSkeleton />
-          </>
-        ) : (
-          <>
-            <StatsCard
               title="Unassigned"
               value={bookingStats?.approved || 0}
               icon={CheckCircle}
@@ -198,29 +160,16 @@ export default function HomePage() {
               iconBgColor="bg-green-100"
             />
             <StatsCard
-              title="Avg. Booking Value"
-              value={`GHS ${(
-                bookingStats?.averageBookingValue || 0
-              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
-              icon={TrendingUp}
-              iconColor="text-indigo-600"
-              iconBgColor="bg-indigo-100"
+              title="Total Revenue"
+              value={`GHS ${(bookingStats?.totalRevenue || 0).toLocaleString(
+                "en-GH",
+                { minimumFractionDigits: 2 }
+              )}`}
+              icon={Wallet}
+              iconColor="text-purple-600"
+              iconBgColor="bg-purple-100"
             />
-            <StatsCard
-              title="Collection Rate"
-              value={`${(paymentStatus?.collectionRate || 0).toFixed(1)}%`}
-              icon={DollarSign}
-              iconColor="text-emerald-600"
-              iconBgColor="bg-emerald-100"
-            />
-            <StatsCard
-              title="Recent Bookings"
-              value={recentBookings ?? 0}
-              icon={Calendar}
-              iconColor="text-cyan-600"
-              iconBgColor="bg-cyan-100"
-            />
-            {revenueTrend && (
+                  {revenueTrend && (
               <StatsCard
                 title="Revenue Trend"
                 value={`${
@@ -245,6 +194,46 @@ export default function HomePage() {
                 }}
               />
             )}
+          </>
+        )}
+      </div>
+
+      {/* Additional Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {showLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatsCard
+              title="Avg. Booking Value"
+              value={`GHS ${(
+                bookingStats?.averageBookingValue || 0
+              ).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`}
+              icon={TrendingUp}
+              iconColor="text-indigo-600"
+              iconBgColor="bg-indigo-100"
+            />
+            <StatsCard
+              title="Collection Rate"
+              value={`${(paymentStatus?.collectionRate || 0).toFixed(1)}%`}
+              icon={Wallet}
+              iconColor="text-emerald-600"
+              iconBgColor="bg-emerald-100"
+            />
+            <StatsCard
+              title="Recent Bookings"
+              value={recentBookings ?? 0}
+              icon={Calendar}
+              iconColor="text-cyan-600"
+              iconBgColor="bg-cyan-100"
+            />
+      
           </>
         )}
       </div>

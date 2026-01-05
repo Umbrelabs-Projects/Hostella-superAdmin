@@ -163,12 +163,27 @@ export const useAuthStore = create<AuthState>()(
             if (process.env.NODE_ENV === "development") {
               console.error("[updateProfile] Refetch failed:", error);
             }
+            // Check if refetch failed due to 401
+            if (error instanceof Error && error.message.includes("Unauthorized")) {
+              // Token is invalid, trigger logout
+              setAuthToken(null);
+              set({ user: null, token: null, loading: false });
+              localStorage.removeItem("auth-storage");
+              throw new Error("Session expired. Please log in again.");
+            }
             // If refetch fails, still keep the returned user data
           }
         } catch (err) {
-          const message =
-            err instanceof Error ? err.message : "Profile update failed";
-          set({ error: message, loading: false });
+          const message = err instanceof Error ? err.message : "Profile update failed";
+          
+          // Check if error is due to 401 (Unauthorized)
+          if (message.includes("Unauthorized")) {
+            setAuthToken(null);
+            set({ user: null, token: null, error: message, loading: false });
+            localStorage.removeItem("auth-storage");
+          } else {
+            set({ error: message, loading: false });
+          }
           throw new Error(message);
         }
       },

@@ -76,7 +76,25 @@ export async function apiFetch<T>(
     ...options,
     headers,
   });
+  
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[apiFetch] Response: ${res.status} ${res.statusText} for ${versionedEndpoint}`);
+  }
+  
   if (!res.ok) {
+    // Handle 401 Unauthorized - clear token and trigger logout
+    if (res.status === 401) {
+      if (process.env.NODE_ENV === "development") {
+        console.error(`[apiFetch] 401 Unauthorized on ${options.method || "GET"} ${versionedEndpoint}`);
+      }
+      // Clear the token immediately
+      setAuthToken(null);
+      // Try to get auth store and call signOut
+      // Note: We can't import useAuthStore here due to circular dependencies,
+      // so we rely on the caller to handle the error and logout
+      throw new Error("Unauthorized - session expired");
+    }
+    
     const text = await res.text();
     // Try to parse JSON error response
     try {

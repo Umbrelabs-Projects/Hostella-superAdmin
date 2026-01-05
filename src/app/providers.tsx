@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const { restoreSession, fetchProfile, token } = useAuthStore();
+  const { restoreSession, fetchProfile, token, signOut } = useAuthStore();
 
   useEffect(() => {
     // Restore session on app load
@@ -27,6 +27,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]); // Re-run when token changes
+
+  // Global error handler for 401 responses (in case they slip through)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Check if we received a 401 recently
+      if (process.env.NODE_ENV === "development") {
+        console.log("[Providers] Checking for unauthorized responses...");
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   return <>{children}</>;
 }

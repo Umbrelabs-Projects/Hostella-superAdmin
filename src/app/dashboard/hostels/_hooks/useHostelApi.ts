@@ -35,7 +35,7 @@ export function useHostelApi() {
         const data = await apiFetch<PaginatedHostelResponse>(
           `/hostels?${params.toString()}`
         );
-        
+
         // Debug: Check what backend actually sends
         if (process.env.NODE_ENV === "development" && data.hostels.length > 0) {
           console.log("[HostelAPI] Backend response sample:", {
@@ -49,7 +49,7 @@ export function useHostelApi() {
             allFields: Object.keys(data.hostels[0]),
           });
         }
-        
+
         return data;
       } catch (err) {
         const message =

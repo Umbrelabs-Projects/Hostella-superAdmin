@@ -23,9 +23,9 @@ export const LABEL_TO_ROOM_TYPE: Record<RoomTitle, RoomType> = {
 };
 
 // Backend booking statuses (what API returns)
-export type BookingStatus = 
-  | "PENDING_PAYMENT" 
-  | "PENDING_APPROVAL" 
+export type BookingStatus =
+  | "PENDING_PAYMENT"
+  | "PENDING_APPROVAL"
   | "APPROVED"
   | "ROOM_ALLOCATED"
   | "COMPLETED"

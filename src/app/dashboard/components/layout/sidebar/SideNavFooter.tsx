@@ -12,7 +12,10 @@ export default function SideNavFooter() {
 
   const handleSignOut = () => {
     signOut();
-    router.push("/");
+    // Add a small delay to ensure state updates complete before navigation
+    setTimeout(() => {
+      router.push("/");
+    }, 100);
   };
 
   return (

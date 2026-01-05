@@ -96,18 +96,18 @@ export default function CreateHostelDialog({
           await uploadHostelImage(createdHostel.id, imageFile);
         } catch (imageErr) {
           console.error("Failed to upload image:", imageErr);
-          toast.warning("Hostel created but image upload failed");
+          toast.warning("Hostel created successfully, but image upload failed. You can add the image later.");
         }
       }
       toast.success(
-        "Hostel created successfully. Triple room data included if provided."
+        "Hostel created successfully"
       );
       onSuccess();
       onClose();
       resetForm();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to create hostel"
+        err instanceof Error ? err.message : "Unable to create hostel. Please try again."
       );
     }
   };
@@ -233,6 +233,7 @@ export default function CreateHostelDialog({
                 placeholder="e.g. 4"
               />
             </div>
+            <RoomFields formData={formData} setFormData={setFormData} />
             <div>
               <Label htmlFor="totalRooms">
                 Total Rooms <span className="text-red-500">*</span>
@@ -255,7 +256,6 @@ export default function CreateHostelDialog({
                 <p className="text-red-500 text-sm mt-1">{errors.totalRooms}</p>
               )}
             </div>
-            <RoomFields formData={formData} setFormData={setFormData} />
             <FacilitiesFields formData={formData} setFormData={setFormData} />
           </div>
           <div>

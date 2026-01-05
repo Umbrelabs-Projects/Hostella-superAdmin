@@ -175,7 +175,7 @@ export default function EditHostelDialog({
         } catch (imageErr) {
           // Log error but don't fail the entire operation
           console.error("Failed to upload image:", imageErr);
-          toast.warning("Hostel updated but image upload failed");
+          toast.warning("Hostel updated successfully, but image upload failed. You can update it later.");
         }
       }
 
@@ -184,9 +184,9 @@ export default function EditHostelDialog({
       onClose();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to update hostel"
+        err instanceof Error ? err.message : "Unable to update hostel. Please try again."
       );
-    }
+    }}
   };
 
   const toggleFacility = (facility: string) => {
@@ -328,30 +328,6 @@ export default function EditHostelDialog({
               />
             </div>
 
-            {/* Total Rooms */}
-            <div>
-              <Label htmlFor="totalRooms">
-                Total Rooms <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="totalRooms"
-                type="number"
-                min="1"
-                value={formData.totalRooms ?? 0}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    totalRooms: parseInt(e.target.value) || 0,
-                  })
-                }
-                required
-                className={errors.totalRooms ? "border-red-500" : ""}
-              />
-              {errors.totalRooms && (
-                <p className="text-red-500 text-sm mt-1">{errors.totalRooms}</p>
-              )}
-            </div>
-
             {/* Single Rooms */}
             <div>
               <Label htmlFor="singleRooms">
@@ -407,6 +383,30 @@ export default function EditHostelDialog({
                   })
                 }
               />
+            </div>
+
+            {/* Total Rooms */}
+            <div>
+              <Label htmlFor="totalRooms">
+                Total Rooms <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="totalRooms"
+                type="number"
+                min="1"
+                value={formData.totalRooms ?? 0}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    totalRooms: parseInt(e.target.value) || 0,
+                  })
+                }
+                required
+                className={errors.totalRooms ? "border-red-500" : ""}
+              />
+              {errors.totalRooms && (
+                <p className="text-red-500 text-sm mt-1">{errors.totalRooms}</p>
+              )}
             </div>
 
             {/* Description */}

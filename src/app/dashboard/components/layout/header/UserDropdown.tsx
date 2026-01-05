@@ -33,7 +33,10 @@ export default function UserDropdown() {
   const handleSignOut = (e: React.MouseEvent) => {
     e.preventDefault();
     signOut();
-    router.push("/");
+    // Add a small delay to ensure state updates complete before navigation
+    setTimeout(() => {
+      router.push("/");
+    }, 100);
   };
 
   if (!isHydrated) {

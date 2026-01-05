@@ -94,25 +94,40 @@ export const useAuthStore = create<AuthState>()(
             const token = parsed?.state?.token;
 
             if (token) {
+              if (process.env.NODE_ENV === "development") {
+                console.log("[restoreSession] Found stored token, restoring session");
+              }
               setAuthToken(token);
               const user = await apiFetch<User>("/auth/me");
-
+              
               // Check if user has SUPER_ADMIN role
               if (user.role !== "SUPER_ADMIN") {
                 // Clear invalid session
+                if (process.env.NODE_ENV === "development") {
+                  console.log("[restoreSession] User is not SUPER_ADMIN, clearing session");
+                }
                 setAuthToken(null);
                 set({ user: null, token: null, initializing: false });
                 localStorage.removeItem("auth-storage");
                 return;
               }
-
+              
+              if (process.env.NODE_ENV === "development") {
+                console.log("[restoreSession] Session restored successfully");
+              }
               set({ user, token, initializing: false });
               return;
             }
           }
 
+          if (process.env.NODE_ENV === "development") {
+            console.log("[restoreSession] No stored session found");
+          }
           set({ initializing: false });
-        } catch {
+        } catch (err) {
+          if (process.env.NODE_ENV === "development") {
+            console.error("[restoreSession] Error restoring session:", err);
+          }
           setAuthToken(null);
           set({ user: null, token: null, initializing: false });
         }

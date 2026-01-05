@@ -5,6 +5,7 @@ import { Plus, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useHostelStore } from "@/stores/useHostelStore";
+import { useAdminStore } from "@/stores/useAdminStore";
 import { useHostelApi } from "./_hooks/useHostelApi";
 import { useAdminApi } from "../super-admin/_hooks/useAdminApi";
 import HostelList from "./_components/HostelList";
@@ -19,6 +20,7 @@ import CreateHostelDialog from "./_components/CreateHostelDialog";
 export default function HostelsPage() {
   const { fetchHostels, enrichHostelsWithDetails, loading } = useHostelApi();
   const { fetchAdmins } = useAdminApi();
+  const admins = useAdminStore((s) => s.admins);
   const {
     hostels,
     total,
@@ -43,6 +45,14 @@ export default function HostelsPage() {
 
   // Show skeleton only on initial load, not on subsequent refreshes
   const showLoading = loading && initialLoad;
+
+  // Enrich hostels with admin assignment data
+  const enrichHostelsWithAdminData = (hostelsData: Hostel[]): Hostel[] => {
+    return hostelsData.map((hostel) => ({
+      ...hostel,
+      hasAdmin: admins.some((admin) => admin.assignedHostelId === hostel.id),
+    }));
+  };
 
   // Keep admin list fresh (hostel-admins only) on mount and when tab becomes visible
   useEffect(() => {
@@ -69,7 +79,8 @@ export default function HostelsPage() {
       try {
         const data = await fetchHostels(page, 10, searchQuery);
         const enriched = await enrichHostelsWithDetails(data.hostels);
-        setHostels(enriched, data.total, data.page, data.totalPages);
+        const fullyEnriched = enrichHostelsWithAdminData(enriched);
+        setHostels(fullyEnriched, data.total, data.page, data.totalPages);
       } catch (error) {
         console.error("Failed to refresh hostels on visibility:", error);
       }
@@ -91,7 +102,9 @@ export default function HostelsPage() {
         const data = await fetchHostels(page, 10, searchQuery);
         // Enrich with detailed info to get room counts
         const enriched = await enrichHostelsWithDetails(data.hostels);
-        setHostels(enriched, data.total, data.page, data.totalPages);
+        // Then enrich with admin assignment data
+        const fullyEnriched = enrichHostelsWithAdminData(enriched);
+        setHostels(fullyEnriched, data.total, data.page, data.totalPages);
       } catch (error) {
         console.error("Failed to load hostels:", error);
       } finally {
@@ -114,6 +127,15 @@ export default function HostelsPage() {
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
+
+  // Update admin status in hostels whenever admins list changes
+  useEffect(() => {
+    if (hostels.length > 0) {
+      const updatedHostels = enrichHostelsWithAdminData(hostels);
+      setHostels(updatedHostels, total, page, totalPages);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admins]);
 
   const handleEdit = (hostel: Hostel) => {
     setLocalSelectedHostel(hostel);
@@ -139,8 +161,12 @@ export default function HostelsPage() {
         fetchAdmins(1, 200, "", "hostel-admin", "all"),
       ]);
 
+      // Enrich with room details and admin assignment
+      const enriched = await enrichHostelsWithDetails(hostelsData.hostels);
+      const fullyEnriched = enrichHostelsWithAdminData(enriched);
+
       setHostels(
-        hostelsData.hostels,
+        fullyEnriched,
         hostelsData.total,
         1,
         hostelsData.totalPages
@@ -154,7 +180,8 @@ export default function HostelsPage() {
     try {
       const data = await fetchHostels(page, 10, searchQuery);
       const enriched = await enrichHostelsWithDetails(data.hostels);
-      setHostels(enriched, data.total, data.page, data.totalPages);
+      const fullyEnriched = enrichHostelsWithAdminData(enriched);
+      setHostels(fullyEnriched, data.total, data.page, data.totalPages);
     } catch (error) {
       console.error("Failed to refresh hostels:", error);
     }

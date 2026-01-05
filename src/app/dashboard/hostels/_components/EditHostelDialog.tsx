@@ -186,7 +186,7 @@ export default function EditHostelDialog({
       toast.error(
         err instanceof Error ? err.message : "Unable to update hostel. Please try again."
       );
-    }}
+    }
   };
 
   const toggleFacility = (facility: string) => {

@@ -20,7 +20,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (initializing) return; // Wait for session restoration
 
-    const isProtectedRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/super-admin");
+    const isProtectedRoute =
+      pathname?.startsWith("/dashboard") ||
+      pathname?.startsWith("/super-admin");
     const isLoginPage = pathname === "/";
 
     if (isProtectedRoute && !token) {

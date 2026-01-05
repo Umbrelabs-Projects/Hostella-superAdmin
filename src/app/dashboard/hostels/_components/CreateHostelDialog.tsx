@@ -96,18 +96,20 @@ export default function CreateHostelDialog({
           await uploadHostelImage(createdHostel.id, imageFile);
         } catch (imageErr) {
           console.error("Failed to upload image:", imageErr);
-          toast.warning("Hostel created successfully, but image upload failed. You can add the image later.");
+          toast.warning(
+            "Hostel created successfully, but image upload failed. You can add the image later."
+          );
         }
       }
-      toast.success(
-        "Hostel created successfully"
-      );
+      toast.success("Hostel created successfully");
       onSuccess();
       onClose();
       resetForm();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Unable to create hostel. Please try again."
+        err instanceof Error
+          ? err.message
+          : "Unable to create hostel. Please try again."
       );
     }
   };
